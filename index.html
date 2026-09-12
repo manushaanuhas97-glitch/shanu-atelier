@@ -527,11 +527,16 @@
             <span class="text-[11px] font-semibold text-stone-500" id="builder-per-rose">Rs. 75 / rose</span>
           </div>
 
-          <div id="builder-stock-alert" class="hidden">
-            <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-bold text-center flex items-center justify-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-              <span>Currently Out of Stock (Pre-order Available)</span>
+          <!-- Live Stock Availability Indicator -->
+          <div id="builder-stock-box" class="p-3 rounded-2xl border transition-all duration-300 flex items-center justify-between shadow-xs bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span id="builder-stock-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <div class="min-w-0">
+                <span id="builder-stock-status-title" class="text-xs font-extrabold block truncate">In Stock • Ready to Handcraft</span>
+                <span id="builder-stock-status-desc" class="text-[10.5px] text-stone-500 dark:text-stone-400 font-medium block">Dispatch within 24-48 hours (Islandwide COD)</span>
+              </div>
             </div>
+            <span id="builder-stock-pill" class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500 text-black uppercase tracking-wider shrink-0">IN STOCK</span>
           </div>
 
           <div class="space-y-2">
@@ -617,29 +622,34 @@
        ========================================================================== -->
   <section id="trio-bundle" class="px-3 sm:px-8 py-8 max-w-7xl mx-auto w-full">
     <div class="rounded-3xl bg-[#141216] text-[#FAF7F2] p-6 sm:p-10 lg:p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 border border-white/10 shadow-lg">
-      
       <div class="space-y-4 max-w-xl">
-        <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-400 text-stone-950">
-          Curated Gift Set
-        </span>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-400 text-stone-950">
+            Curated Gift Set
+          </span>
+          <span id="bundle-stock-badge" class="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="bundle-stock-text">In Stock • Gift Ready</span>
+          </span>
+        </div>
         <h3 class="serif-title text-2xl sm:text-4xl font-bold leading-tight">The Complete Vanity Trio Set</h3>
         <p class="text-stone-300 text-xs sm:text-sm leading-relaxed">
           Includes the <b>Oval Trinket Tray</b> + <b>Scallop Shell Dish</b> + <b>Lotus Tealight Vessel</b> packaged in an aesthetic kraft gift box with natural dried flowers and silk ribbon.
         </p>
         <div class="flex items-baseline gap-3 pt-1">
-          <span class="text-3xl font-extrabold text-white">Rs. 3,200</span>
+          <span class="text-3xl font-extrabold text-white" id="bundle-display-price">Rs. 3,200</span>
           <span class="text-sm line-through text-stone-500">Rs. 3,850</span>
           <span class="text-xs text-amber-300 font-bold bg-white/10 px-2.5 py-0.5 rounded-full">Save Rs. 650</span>
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
-        <button onclick="addToCart(10)" class="px-6 py-3.5 rounded-full bg-white text-stone-900 text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition shadow cursor-pointer text-center">
+        <button id="bundle-add-btn" onclick="addToCart(10)" class="px-6 py-3.5 rounded-full bg-white text-stone-900 text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition shadow cursor-pointer text-center">
           Add Trio Set to Bag
         </button>
-        <button onclick="quickOrder(10)" class="px-6 py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition shadow flex items-center justify-center gap-2 cursor-pointer">
+        <button id="bundle-order-btn" onclick="quickOrder(10)" class="px-6 py-3.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition shadow flex items-center justify-center gap-2 cursor-pointer">
           <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.072-1.87-.442-1.391-.577-2.316-1.993-2.385-2.086-.069-.092-.563-.748-.563-1.424 0-.676.354-1.008.48-1.144.125-.136.273-.171.365-.171.092 0 .183.001.263.005.084.004.197-.032.308.234.114.272.39 1.008.424 1.077.034.069.057.15.011.242-.046.092-.069.15-.137.23-.069.079-.144.177-.206.238-.069.068-.141.142-.061.279.08.137.355.586.762.949.525.467.968.612 1.106.68.137.069.217.058.297-.034.08-.093.343-.401.435-.539.091-.137.183-.114.308-.068.126.046.79.373.927.441.137.069.229.103.263.161.034.057.034.333-.11.738zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.662 1.436 5.178L2 22l4.954-1.399A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
-          <span>Order on WhatsApp</span>
+          <span id="bundle-order-btn-text">Order on WhatsApp</span>
         </button>
       </div>
 
@@ -1309,14 +1319,18 @@
         const currentPrice = getTierPrice(t);
         const inStock = isTierInStock(t);
 
+        const stockBadge = inStock
+          ? `<span class="px-1.5 py-0.2 rounded-full text-[8.5px] font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5"><span class="w-1 h-1 rounded-full bg-emerald-500"></span>${currentLang === 'si' ? 'ඇත' : 'In Stock'}</span>`
+          : `<span class="px-1.5 py-0.2 rounded-full text-[8.5px] font-extrabold bg-rose-600 text-white flex items-center gap-0.5 leading-none shadow"><span class="w-1 h-1 rounded-full bg-white"></span>${currentLang === 'si' ? 'ඉවරයි' : 'Out'}</span>`;
+
         return `
-          <button onclick="selectRoseTier(${t.originalIndex})" class="p-2 rounded-2xl border transition text-center flex flex-col items-center justify-center gap-1 cursor-pointer relative ${isActive ? 'bg-stone-900 text-white border-stone-900 shadow-sm' : 'bg-stone-50 dark:bg-white/5 border-stone-200 dark:border-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-100'}">
-            ${!inStock ? '<span class="absolute top-1 right-1 px-1.5 py-0.2 rounded bg-rose-600 text-white text-[8px] font-extrabold leading-none">Out</span>' : ''}
-            <div class="w-8 h-8 rounded-full overflow-hidden border ${isActive ? 'border-amber-300' : 'border-stone-300'} ${!inStock ? 'opacity-50 grayscale' : ''}">
+          <button onclick="selectRoseTier(${t.originalIndex})" class="p-2 rounded-2xl border transition text-center flex flex-col items-center justify-center gap-1 cursor-pointer relative ${isActive ? 'bg-stone-900 text-white border-stone-900 shadow-md ring-2 ring-amber-400/40' : (inStock ? 'bg-stone-50 dark:bg-white/5 border-stone-200 dark:border-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-100' : 'bg-rose-50/20 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/40 text-stone-500 dark:text-stone-400 opacity-85')}">
+            <div class="w-8 h-8 rounded-full overflow-hidden border ${isActive ? 'border-amber-300' : (inStock ? 'border-stone-300 dark:border-stone-600' : 'border-rose-400 opacity-60 grayscale')}">
               <img src="${t.img}" alt="${t.count} Roses" class="w-full h-full object-cover">
             </div>
             <span class="text-xs font-bold leading-none mt-0.5">${t.count} Roses</span>
             <span class="text-[10px] font-extrabold ${isActive ? 'text-amber-300' : 'text-stone-900 dark:text-stone-100'}">Rs. ${currentPrice.toLocaleString()}</span>
+            ${stockBadge}
           </button>
         `;
       }).join('');
@@ -1381,30 +1395,52 @@
       document.getElementById('builder-per-rose').innerText = `Rs. ${perRose} / rose`;
       document.getElementById('builder-total-price').innerText = `Rs. ${totalPrice.toLocaleString()}`;
 
-      // Stock Alert and Button States
-      const alertBox = document.getElementById('builder-stock-alert');
+      // Stock Status Box and Action Buttons
+      const stockBox = document.getElementById('builder-stock-box');
+      const stockDot = document.getElementById('builder-stock-dot');
+      const stockTitle = document.getElementById('builder-stock-status-title');
+      const stockDesc = document.getElementById('builder-stock-status-desc');
+      const stockPill = document.getElementById('builder-stock-pill');
       const addBtn = document.getElementById('builder-add-btn');
       const addBtnText = document.getElementById('builder-add-btn-text');
       const orderBtnText = document.getElementById('builder-order-btn-text');
 
-      if (!inStock) {
-        if (alertBox) alertBox.classList.remove('hidden');
-        if (addBtn) {
-          addBtn.disabled = true;
-          addBtn.classList.add('opacity-50', 'cursor-not-allowed');
-          addBtn.classList.remove('cursor-pointer');
+      if (inStock) {
+        if (stockBox) {
+          stockBox.className = "p-3 rounded-2xl border transition-all duration-300 flex items-center justify-between shadow-xs bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200";
         }
-        if (addBtnText) addBtnText.innerText = currentLang === 'si' ? "දැනට අවසන් (Sold Out)" : "Currently Out of Stock";
-        if (orderBtnText) orderBtnText.innerText = currentLang === 'si' ? "Pre-order විමසන්න (WhatsApp)" : "Pre-order Inquiry (WhatsApp)";
-      } else {
-        if (alertBox) alertBox.classList.add('hidden');
+        if (stockDot) stockDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0";
+        if (stockTitle) stockTitle.innerText = currentLang === 'si' ? "✓ භාණ්ඩ තොග ඇත (In Stock)" : "✓ In Stock • Ready to Handcraft";
+        if (stockDesc) stockDesc.innerText = currentLang === 'si' ? "පැය 24-48 ඇතුළත දිවයින පුරා COD බෙදාහැරීම" : "Dispatch within 24-48 hours (Islandwide COD)";
+        if (stockPill) {
+          stockPill.className = "px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500 text-black uppercase tracking-wider shrink-0";
+          stockPill.innerText = currentLang === 'si' ? "තොග ඇත" : "IN STOCK";
+        }
+
         if (addBtn) {
           addBtn.disabled = false;
-          addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-          addBtn.classList.add('cursor-pointer');
+          addBtn.className = "w-full py-3 px-5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2";
         }
         if (addBtnText) addBtnText.innerText = currentLang === 'si' ? "Custom පොකුර Bag එකට දමන්න" : "Add Custom Bouquet to Bag";
         if (orderBtnText) orderBtnText.innerText = currentLang === 'si' ? "WhatsApp මගින් ඇණවුම් කරන්න (COD)" : "Order on WhatsApp (COD)";
+      } else {
+        if (stockBox) {
+          stockBox.className = "p-3 rounded-2xl border transition-all duration-300 flex items-center justify-between shadow-xs bg-rose-500/15 border-rose-500/40 text-rose-900 dark:text-rose-200";
+        }
+        if (stockDot) stockDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0";
+        if (stockTitle) stockTitle.innerText = currentLang === 'si' ? "✗ දැනට තොග අවසන් (Stock ඉවරයි)" : "✗ Currently Out of Stock (Sold Out)";
+        if (stockDesc) stockDesc.innerText = currentLang === 'si' ? "කල්තියා Pre-order කරන්න - ඊළඟ Batch එකෙන් ලැබේ" : "Pre-order for next handcrafted batch";
+        if (stockPill) {
+          stockPill.className = "px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-rose-600 text-white uppercase tracking-wider shrink-0 shadow";
+          stockPill.innerText = currentLang === 'si' ? "තොග ඉවරයි" : "SOLD OUT";
+        }
+
+        if (addBtn) {
+          addBtn.disabled = true;
+          addBtn.className = "w-full py-3 px-5 rounded-full bg-stone-200 dark:bg-white/10 text-stone-400 dark:text-stone-500 text-xs font-bold uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2";
+        }
+        if (addBtnText) addBtnText.innerText = currentLang === 'si' ? "තොග අවසන් (Sold Out)" : "Currently Out of Stock";
+        if (orderBtnText) orderBtnText.innerText = currentLang === 'si' ? "Pre-order විමසන්න (WhatsApp)" : "Inquire / Pre-order on WhatsApp";
       }
     }
 
@@ -1497,10 +1533,20 @@
         const currentPrice = getDecorPrice(p);
         const inStock = isDecorInStock(p);
 
+        const stockBadge = inStock
+          ? `<div class="absolute top-2.5 left-2.5 z-10 bg-emerald-600/95 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 backdrop-blur-xs">
+               <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+               <span>${currentLang === 'si' ? '✓ තොග ඇත (In Stock)' : '✓ In Stock'}</span>
+             </div>`
+          : `<div class="absolute top-2.5 left-2.5 z-10 bg-rose-600/95 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 backdrop-blur-xs">
+               <span class="w-2 h-2 rounded-full bg-white"></span>
+               <span>${currentLang === 'si' ? '✗ තොග අවසන් (Sold Out)' : '✗ Sold Out'}</span>
+             </div>`;
+
         return `
           <div class="group bg-white dark:bg-[#17141C] rounded-2xl overflow-hidden border border-[#E8DFD5] dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition relative">
-            ${!inStock ? '<div class="absolute top-2 left-2 z-10 bg-rose-600/90 text-white text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full shadow">Sold Out</div>' : ''}
-            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer ${!inStock ? 'opacity-60' : ''}" onclick="openLightbox(${p.id})">
+            ${stockBadge}
+            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer ${!inStock ? 'opacity-70 grayscale-[20%]' : ''}" onclick="openLightbox(${p.id})">
               <img src="${p.img}" alt="${title}" class="w-full h-full object-cover img-zoom">
               <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Zoom</div>
             </div>
@@ -1511,13 +1557,18 @@
                 <div class="text-[10.5px] text-stone-400 dark:text-stone-500 mt-1 font-medium">${specs}</div>
               </div>
               <div class="pt-3 border-t border-stone-100 dark:border-white/10 flex items-center justify-between">
-                <span class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${currentPrice.toLocaleString()}</span>
+                <div>
+                  <div class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${currentPrice.toLocaleString()}</div>
+                  <div class="text-[10px] font-bold ${inStock ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">
+                    ${inStock ? (currentLang === 'si' ? '✓ භාණ්ඩ තොග ඇත' : '✓ In Stock') : (currentLang === 'si' ? '✗ තොග ඉවරයි (Pre-order)' : '✗ Out of Stock')}
+                  </div>
+                </div>
                 <div class="flex items-center gap-1.5">
-                  <button onclick="${inStock ? `addToCart(${p.id})` : ''}" ${!inStock ? 'disabled' : ''} class="px-3 py-1.5 rounded-full ${inStock ? 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer' : 'bg-stone-300 dark:bg-white/10 text-stone-500 cursor-not-allowed'} text-[11px] font-semibold transition">
-                    ${inStock ? 'Add' : 'Sold Out'}
+                  <button onclick="${inStock ? `addToCart(${p.id})` : ''}" ${!inStock ? 'disabled' : ''} class="px-3 py-1.5 rounded-full ${inStock ? 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer' : 'bg-stone-200 dark:bg-white/10 text-stone-400 dark:text-stone-500 cursor-not-allowed'} text-[11px] font-semibold transition">
+                    ${inStock ? (currentLang === 'si' ? 'Add' : 'Add') : (currentLang === 'si' ? 'ඉවරයි' : 'Sold Out')}
                   </button>
-                  <button onclick="quickOrder(${p.id})" class="px-2.5 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold transition cursor-pointer">
-                    ${inStock ? 'Order' : 'Pre-order'}
+                  <button onclick="quickOrder(${p.id})" class="px-2.5 py-1.5 rounded-full ${inStock ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-amber-700 hover:bg-amber-800'} text-white text-[11px] font-semibold transition cursor-pointer">
+                    ${inStock ? (currentLang === 'si' ? 'Order' : 'Order') : (currentLang === 'si' ? 'Pre-order' : 'Pre-order')}
                   </button>
                 </div>
               </div>
@@ -1542,10 +1593,21 @@
       section.classList.remove('hidden');
       grid.innerHTML = items.map(p => {
         const inStock = p.inStock !== false;
+
+        const stockBadge = inStock
+          ? `<div class="absolute top-2.5 left-2.5 z-10 bg-emerald-600/95 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 backdrop-blur-xs">
+               <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+               <span>${currentLang === 'si' ? '✓ තොග ඇත (In Stock)' : '✓ In Stock'}</span>
+             </div>`
+          : `<div class="absolute top-2.5 left-2.5 z-10 bg-rose-600/95 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 backdrop-blur-xs">
+               <span class="w-2 h-2 rounded-full bg-white"></span>
+               <span>${currentLang === 'si' ? '✗ තොග අවසන් (Sold Out)' : '✗ Sold Out'}</span>
+             </div>`;
+
         return `
           <div class="group bg-white dark:bg-[#17141C] rounded-2xl overflow-hidden border border-[#E8DFD5] dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition relative">
-            ${!inStock ? '<div class="absolute top-2 left-2 z-10 bg-rose-600/90 text-white text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full shadow">Sold Out</div>' : ''}
-            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer ${!inStock ? 'opacity-60' : ''}" onclick="openCustomLightbox('${p.id}')">
+            ${stockBadge}
+            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer ${!inStock ? 'opacity-70 grayscale-[20%]' : ''}" onclick="openCustomLightbox('${p.id}')">
               <img src="${p.img}" alt="${p.title}" class="w-full h-full object-cover img-zoom">
               <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Zoom</div>
             </div>
@@ -1559,13 +1621,18 @@
                 <div class="text-[10.5px] text-stone-400 dark:text-stone-500 mt-1 font-medium">${p.specs}</div>
               </div>
               <div class="pt-3 border-t border-stone-100 dark:border-white/10 flex items-center justify-between">
-                <span class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${p.price.toLocaleString()}</span>
+                <div>
+                  <div class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${p.price.toLocaleString()}</div>
+                  <div class="text-[10px] font-bold ${inStock ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">
+                    ${inStock ? (currentLang === 'si' ? '✓ භාණ්ඩ තොග ඇත' : '✓ In Stock') : (currentLang === 'si' ? '✗ තොග ඉවරයි (Pre-order)' : '✗ Out of Stock')}
+                  </div>
+                </div>
                 <div class="flex items-center gap-1.5">
-                  <button onclick="${inStock ? `addCustomItemToCart('${p.id}')` : ''}" ${!inStock ? 'disabled' : ''} class="px-3 py-1.5 rounded-full ${inStock ? 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer' : 'bg-stone-300 dark:bg-white/10 text-stone-500 cursor-not-allowed'} text-[11px] font-semibold transition">
-                    ${inStock ? 'Add' : 'Sold Out'}
+                  <button onclick="${inStock ? `addCustomItemToCart('${p.id}')` : ''}" ${!inStock ? 'disabled' : ''} class="px-3 py-1.5 rounded-full ${inStock ? 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer' : 'bg-stone-200 dark:bg-white/10 text-stone-400 dark:text-stone-500 cursor-not-allowed'} text-[11px] font-semibold transition">
+                    ${inStock ? (currentLang === 'si' ? 'Add' : 'Add') : (currentLang === 'si' ? 'ඉවරයි' : 'Sold Out')}
                   </button>
-                  <button onclick="orderCustomItemWhatsApp('${p.id}')" class="px-2.5 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold transition cursor-pointer">
-                    ${inStock ? 'Order' : 'Pre-order'}
+                  <button onclick="orderCustomItemWhatsApp('${p.id}')" class="px-2.5 py-1.5 rounded-full ${inStock ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-amber-700 hover:bg-amber-800'} text-white text-[11px] font-semibold transition cursor-pointer">
+                    ${inStock ? (currentLang === 'si' ? 'Order' : 'Order') : (currentLang === 'si' ? 'Pre-order' : 'Pre-order')}
                   </button>
                 </div>
               </div>
@@ -1602,23 +1669,53 @@
       const item = (liveStoreData.customProducts || []).find(p => p.id === itemId);
       if (!item) return;
       const waNumber = getActiveWhatsAppNumber();
+      const inStock = item.inStock !== false;
 
-      let text = `*SHANU ATELIER BESPOKE INQUIRY*%0A%0A*Item:* ${item.title}%0A*Category:* ${item.category}%0A*Price:* Rs. ${item.price.toLocaleString()} (Cash on Delivery)%0A%0A*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]`;
+      let text = inStock 
+        ? `*SHANU ATELIER BESPOKE INQUIRY*%0A%0A`
+        : `*SHANU ATELIER BESPOKE PRE-ORDER INQUIRY (CURRENTLY OUT OF STOCK)*%0A%0A`;
+
+      text += `*Item:* ${item.title}%0A*Category:* ${item.category}%0A*Price:* Rs. ${item.price.toLocaleString()} (Cash on Delivery)%0A%0A`;
+      text += inStock
+        ? `*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]%0A%0APlease confirm availability and dispatch via Cash on Delivery.`
+        : `*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]%0A%0APlease let me know when this item is available for pre-order dispatch.`;
+
       window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${text}`, '_blank');
     }
 
     function openCustomLightbox(itemId) {
       const item = (liveStoreData.customProducts || []).find(p => p.id === itemId);
       if (!item) return;
+      const inStock = item.inStock !== false;
 
       document.getElementById('lightbox-img').src = item.img;
       document.getElementById('lightbox-title').innerText = item.title;
       document.getElementById('lightbox-price').innerText = `Rs. ${item.price.toLocaleString()}`;
-      document.getElementById('lightbox-specs').innerText = item.specs || 'Bespoke Atelier Creation';
-      document.getElementById('lightbox-badge').innerText = item.category || 'Atelier Exclusive';
+      document.getElementById('lightbox-specs').innerText = `${item.specs || 'Bespoke Atelier Creation'} • ${inStock ? 'In Stock' : 'Currently Out of Stock'}`;
+      document.getElementById('lightbox-badge').innerText = inStock ? (item.category || 'In Stock') : 'Sold Out';
 
-      document.getElementById('lightbox-add-btn').onclick = () => { closeLightbox(); addCustomItemToCart(item.id); };
-      document.getElementById('lightbox-order-btn').onclick = () => { closeLightbox(); orderCustomItemWhatsApp(item.id); };
+      const addBtn = document.getElementById('lightbox-add-btn');
+      const orderBtn = document.getElementById('lightbox-order-btn');
+
+      if (inStock) {
+        addBtn.disabled = false;
+        addBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-white text-stone-900 text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition cursor-pointer";
+        addBtn.innerText = currentLang === 'si' ? "Bag එකට දමන්න" : "Add to Bag";
+        addBtn.onclick = () => { closeLightbox(); addCustomItemToCart(item.id); };
+
+        orderBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+        orderBtn.innerText = currentLang === 'si' ? "WhatsApp මගින් ඇණවුම්" : "Order on WhatsApp (COD)";
+        orderBtn.onclick = () => { closeLightbox(); orderCustomItemWhatsApp(item.id); };
+      } else {
+        addBtn.disabled = true;
+        addBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-stone-700 text-stone-400 text-xs font-bold uppercase tracking-wider cursor-not-allowed";
+        addBtn.innerText = currentLang === 'si' ? "තොග අවසන්" : "Sold Out";
+        addBtn.onclick = null;
+
+        orderBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+        orderBtn.innerText = currentLang === 'si' ? "Pre-order විමසන්න" : "Pre-order on WhatsApp";
+        orderBtn.onclick = () => { closeLightbox(); orderCustomItemWhatsApp(item.id); };
+      }
 
       document.getElementById('image-lightbox').classList.remove('hidden');
     }
@@ -1637,6 +1734,53 @@
         }
       }
 
+      // Vanity Trio Set (Decor ID 10) Live Stock & Price Sync
+      const trioItem = decorItems.find(i => i.id === 10);
+      if (trioItem) {
+        const trioPrice = getDecorPrice(trioItem);
+        const trioInStock = isDecorInStock(trioItem);
+
+        const priceEl = document.getElementById('bundle-display-price');
+        if (priceEl) priceEl.innerText = `Rs. ${trioPrice.toLocaleString()}`;
+
+        const badgeEl = document.getElementById('bundle-stock-badge');
+        const textEl = document.getElementById('bundle-stock-text');
+        const addBtn = document.getElementById('bundle-add-btn');
+        const orderText = document.getElementById('bundle-order-btn-text');
+
+        if (trioInStock) {
+          if (badgeEl) {
+            badgeEl.className = "px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+          }
+          if (textEl) {
+            textEl.innerHTML = currentLang === 'si' ? '✓ තොග ඇත • සූදානම් (In Stock)' : '✓ In Stock • Gift Ready';
+          }
+          if (addBtn) {
+            addBtn.disabled = false;
+            addBtn.className = "px-6 py-3.5 rounded-full bg-white text-stone-900 text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition shadow cursor-pointer text-center";
+            addBtn.innerText = currentLang === 'si' ? 'Trio කට්ටලය Bag එකට දමන්න' : 'Add Trio Set to Bag';
+          }
+          if (orderText) {
+            orderText.innerText = currentLang === 'si' ? 'WhatsApp මගින් ඇණවුම් කරන්න' : 'Order on WhatsApp (COD)';
+          }
+        } else {
+          if (badgeEl) {
+            badgeEl.className = "px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 bg-rose-500/25 text-rose-200 border border-rose-500/50 shadow";
+          }
+          if (textEl) {
+            textEl.innerHTML = currentLang === 'si' ? '✗ දැනට තොග අවසන් (Sold Out)' : '✗ Sold Out • Pre-order Only';
+          }
+          if (addBtn) {
+            addBtn.disabled = true;
+            addBtn.className = "px-6 py-3.5 rounded-full bg-stone-800 text-stone-500 text-xs font-bold uppercase tracking-wider cursor-not-allowed text-center";
+            addBtn.innerText = currentLang === 'si' ? 'දැනට තොග අවසන්' : 'Currently Sold Out';
+          }
+          if (orderText) {
+            orderText.innerText = currentLang === 'si' ? 'Pre-order විමසන්න (WhatsApp)' : 'Inquire / Pre-order on WhatsApp';
+          }
+        }
+      }
+
       renderRoseTierChips();
       updateBuilderPreview();
       renderDecorProducts();
@@ -1648,6 +1792,10 @@
     function addToCart(productId) {
       const product = decorItems.find(i => i.id === productId);
       if (!product) return;
+      if (!isDecorInStock(product)) {
+        alert("This item is currently out of stock. Please use the WhatsApp Pre-order option.");
+        return;
+      }
 
       const existing = cart.find(i => i.id === product.id);
       if (existing) {
@@ -1674,9 +1822,17 @@
       const price = getDecorPrice(product);
       const inStock = isDecorInStock(product);
       const waNumber = getActiveWhatsAppNumber();
+      const title = currentLang === 'si' ? product.title_si : product.title_en;
 
-      let text = inStock ? "*SHANU ATELIER ORDER*%0A%0A" : "*SHANU ATELIER PRE-ORDER INQUIRY*%0A%0A";
-      text += `*Item:* ${product.title_en}%0A*Price:* Rs. ${price.toLocaleString()} (Cash on Delivery)%0A%0A*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]`;
+      let text = inStock 
+        ? "*SHANU ATELIER ORDER*%0A%0A" 
+        : "*SHANU ATELIER PRE-ORDER INQUIRY (CURRENTLY OUT OF STOCK)*%0A%0A";
+
+      text += `*Item:* ${title}%0A*Price:* Rs. ${price.toLocaleString()} (Cash on Delivery)%0A%0A`;
+      text += inStock
+        ? "*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]%0A%0APlease confirm availability and dispatch via Cash on Delivery."
+        : "*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]%0A%0APlease let me know when this item will be back in stock for pre-order delivery.";
+
       window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${text}`, '_blank');
     }
 
@@ -1815,14 +1971,37 @@
 
     function openLightboxFromCurrentBuilder() {
       const tier = rosePricingTiers[selectedTierIndex];
+      const inStock = isTierInStock(tier);
+      const currentPrice = getTierPrice(tier) + (hasFairyLights ? 250 : 0);
+
       document.getElementById('lightbox-img').src = tier.img;
       document.getElementById('lightbox-title').innerText = `${tier.count} Handcrafted Satin Roses (${tier.title_en})`;
-      document.getElementById('lightbox-price').innerText = `Rs. ${tier.price.toLocaleString()} (COD)`;
-      document.getElementById('lightbox-specs').innerText = `${tier.size_en} • Guaranteed Count`;
-      document.getElementById('lightbox-badge').innerText = "Guaranteed Scale";
+      document.getElementById('lightbox-price').innerText = `Rs. ${currentPrice.toLocaleString()} (COD)`;
+      document.getElementById('lightbox-specs').innerText = `${tier.size_en} • ${inStock ? 'In Stock (භාණ්ඩ ඇත)' : 'Out of Stock (තොග අවසන්)'}`;
+      document.getElementById('lightbox-badge').innerText = inStock ? "In Stock" : "Sold Out";
       
-      document.getElementById('lightbox-add-btn').onclick = () => { closeLightbox(); addCustomBouquetToCart(); };
-      document.getElementById('lightbox-order-btn').onclick = () => { closeLightbox(); orderCustomBouquetWhatsApp(); };
+      const addBtn = document.getElementById('lightbox-add-btn');
+      const orderBtn = document.getElementById('lightbox-order-btn');
+
+      if (inStock) {
+        addBtn.disabled = false;
+        addBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-white text-stone-900 text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition cursor-pointer";
+        addBtn.innerText = currentLang === 'si' ? "Bag එකට දමන්න" : "Add to Bag";
+        addBtn.onclick = () => { closeLightbox(); addCustomBouquetToCart(); };
+
+        orderBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+        orderBtn.innerText = currentLang === 'si' ? "WhatsApp මගින් ඇණවුම්" : "Order on WhatsApp (COD)";
+        orderBtn.onclick = () => { closeLightbox(); orderCustomBouquetWhatsApp(); };
+      } else {
+        addBtn.disabled = true;
+        addBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-stone-700 text-stone-400 text-xs font-bold uppercase tracking-wider cursor-not-allowed";
+        addBtn.innerText = currentLang === 'si' ? "තොග අවසන්" : "Sold Out";
+        addBtn.onclick = null;
+
+        orderBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+        orderBtn.innerText = currentLang === 'si' ? "Pre-order විමසන්න" : "Pre-order on WhatsApp";
+        orderBtn.onclick = () => { closeLightbox(); orderCustomBouquetWhatsApp(); };
+      }
       
       document.getElementById('image-lightbox').classList.remove('hidden');
     }
@@ -1841,14 +2020,38 @@
     function updateLightboxContent() {
       const item = allGalleryImages[activeLightboxIndex];
       if (!item) return;
+      const original = decorItems.find(d => d.id === item.id);
+      const inStock = original ? isDecorInStock(original) : true;
+      const currentPrice = original ? getDecorPrice(original) : null;
+
       document.getElementById('lightbox-img').src = item.img;
       document.getElementById('lightbox-title').innerText = item.title;
-      document.getElementById('lightbox-price').innerText = item.price;
-      document.getElementById('lightbox-specs').innerText = item.specs;
-      document.getElementById('lightbox-badge').innerText = "Artisanal Living Piece";
+      document.getElementById('lightbox-price').innerText = currentPrice ? `Rs. ${currentPrice.toLocaleString()}` : item.price;
+      document.getElementById('lightbox-specs').innerText = `${item.specs} • ${inStock ? 'In Stock (භාණ්ඩ ඇත)' : 'Sold Out (තොග අවසන්)'}`;
+      document.getElementById('lightbox-badge').innerText = inStock ? (item.id === 10 ? 'Gift Suite' : 'In Stock') : 'Sold Out';
 
-      document.getElementById('lightbox-add-btn').onclick = () => { closeLightbox(); addToCart(item.id); };
-      document.getElementById('lightbox-order-btn').onclick = () => { closeLightbox(); quickOrder(item.id); };
+      const addBtn = document.getElementById('lightbox-add-btn');
+      const orderBtn = document.getElementById('lightbox-order-btn');
+
+      if (inStock) {
+        addBtn.disabled = false;
+        addBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-white text-stone-900 text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition cursor-pointer";
+        addBtn.innerText = currentLang === 'si' ? "Bag එකට දමන්න" : "Add to Bag";
+        addBtn.onclick = () => { closeLightbox(); addToCart(item.id); };
+
+        orderBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+        orderBtn.innerText = currentLang === 'si' ? "WhatsApp මගින් ඇණවුම්" : "Order on WhatsApp (COD)";
+        orderBtn.onclick = () => { closeLightbox(); quickOrder(item.id); };
+      } else {
+        addBtn.disabled = true;
+        addBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-stone-700 text-stone-400 text-xs font-bold uppercase tracking-wider cursor-not-allowed";
+        addBtn.innerText = currentLang === 'si' ? "තොග අවසන්" : "Sold Out";
+        addBtn.onclick = null;
+
+        orderBtn.className = "flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+        orderBtn.innerText = currentLang === 'si' ? "Pre-order විමසන්න" : "Pre-order on WhatsApp";
+        orderBtn.onclick = () => { closeLightbox(); quickOrder(item.id); };
+      }
     }
 
     function navigateLightbox(dir, e) {
