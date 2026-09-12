@@ -1189,9 +1189,11 @@
     ]);
 
     // ==========================================
-    // Live Store Engine & Real-Time Sync
+    // Live Store Engine & Multi-Device Cloud Sync
     // ==========================================
     const STORAGE_KEY = 'shanu_atelier_store_v1';
+    const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a067127101a096759c1102c5';
+
     let liveStoreData = {
       stockOverrides: {},
       customProducts: [],
@@ -1214,32 +1216,56 @@
       }
     }
 
+    // Real-Time Cloud Sync (Loads live changes from Admin app on any device)
+    async function fetchCloudStoreData() {
+      try {
+        const res = await fetch(CLOUD_STORE_URL + '?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.data && json.data.state) {
+            const cloudState = JSON.parse(json.data.state);
+            if (cloudState && typeof cloudState === 'object') {
+              liveStoreData = { ...liveStoreData, ...cloudState };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(liveStoreData));
+              applyLiveStoreUpdates();
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Cloud sync offline fallback to local store", e);
+      }
+    }
+
     function getTierPrice(tier) {
-      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['rose_' + tier.count]) {
-        const p = liveStoreData.stockOverrides['rose_' + tier.count].price;
-        if (p && typeof p === 'number' && p > 0) return p;
+      const override = liveStoreData.stockOverrides && liveStoreData.stockOverrides['rose_' + tier.count];
+      if (override && typeof override === 'object' && typeof override.price === 'number' && override.price > 0) {
+        return override.price;
       }
       return tier.price;
     }
 
     function isTierInStock(tier) {
-      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['rose_' + tier.count]) {
-        return liveStoreData.stockOverrides['rose_' + tier.count].inStock !== false;
+      const override = liveStoreData.stockOverrides && liveStoreData.stockOverrides['rose_' + tier.count];
+      if (override !== undefined && override !== null) {
+        if (typeof override === 'boolean') return override;
+        if (typeof override === 'object' && 'inStock' in override) return override.inStock !== false;
       }
       return true;
     }
 
     function getDecorPrice(item) {
-      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['decor_' + item.id]) {
-        const p = liveStoreData.stockOverrides['decor_' + item.id].price;
-        if (p && typeof p === 'number' && p > 0) return p;
+      const override = liveStoreData.stockOverrides && liveStoreData.stockOverrides['decor_' + item.id];
+      if (override && typeof override === 'object' && typeof override.price === 'number' && override.price > 0) {
+        return override.price;
       }
       return item.price;
     }
 
     function isDecorInStock(item) {
-      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['decor_' + item.id]) {
-        return liveStoreData.stockOverrides['decor_' + item.id].inStock !== false;
+      const override = liveStoreData.stockOverrides && liveStoreData.stockOverrides['decor_' + item.id];
+      if (override !== undefined && override !== null) {
+        if (typeof override === 'boolean') return override;
+        if (typeof override === 'object' && 'inStock' in override) return override.inStock !== false;
       }
       return true;
     }
@@ -2143,6 +2169,18 @@
 
       applyLiveStoreUpdates();
       applyLanguage();
+
+      // Multi-Device Cloud Sync on Boot
+      fetchCloudStoreData();
+
+      // Background Revalidation every 12 seconds
+      setInterval(fetchCloudStoreData, 12000);
+
+      // Instant refresh when user switches tabs or returns to browser
+      window.addEventListener('focus', fetchCloudStoreData);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) fetchCloudStoreData();
+      });
 
       // Listen for Live Updates from Admin App
       if ('BroadcastChannel' in window) {

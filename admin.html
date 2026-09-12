@@ -490,6 +490,7 @@
     const STORAGE_KEY = 'shanu_atelier_store_v1';
     const PIN_KEY = 'shanu_admin_pin';
     const AUTH_KEY = 'shanu_admin_auth';
+    const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a067127101a096759c1102c5';
 
     let currentPinInput = "";
     let selectedStockCategory = 'all';
@@ -519,9 +520,9 @@
         }
       }
 
-      // Initialize base overrides if not present
+      // Initialize base overrides if not present, preserving existing booleans or objects
       baseProducts.forEach(p => {
-        if (!storeData.stockOverrides[p.id]) {
+        if (storeData.stockOverrides[p.id] === undefined || storeData.stockOverrides[p.id] === null) {
           storeData.stockOverrides[p.id] = { inStock: true, price: p.price };
         }
       });
@@ -546,6 +547,9 @@
       renderStockList();
       renderCustomItems();
 
+      // Fetch Latest Cloud Store Data on startup to sync across any other phone/device
+      fetchCloudDataOnStart();
+
       // Listen for updates from other tabs / windows
       window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEY && e.newValue) {
@@ -557,6 +561,34 @@
           } catch(err){}
         }
       });
+    }
+
+    async function fetchCloudDataOnStart() {
+      const dot = document.getElementById('cloud-status-dot');
+      const text = document.getElementById('cloud-status-text');
+      try {
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+        if (text) text.innerText = "Checking Cloud...";
+        const res = await fetch(CLOUD_STORE_URL + '?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.data && json.data.state) {
+            const cloudState = JSON.parse(json.data.state);
+            if (cloudState && typeof cloudState === 'object') {
+              storeData = { ...storeData, ...cloudState };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(storeData));
+              renderStockList();
+              renderCustomItems();
+              if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+              if (text) text.innerText = "Live Cloud Synced ✓";
+            }
+          }
+        }
+      } catch(e) {
+        console.warn("Could not fetch cloud data on start", e);
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-stone-500";
+        if (text) text.innerText = "Local Mode";
+      }
     }
 
     // PIN Pad Logic
@@ -669,12 +701,24 @@
 
       // Combine base products and custom products
       const allItems = [
-        ...baseProducts.map(p => ({
-          ...p,
-          isCustom: false,
-          inStock: storeData.stockOverrides[p.id] ? storeData.stockOverrides[p.id].inStock : true,
-          price: storeData.stockOverrides[p.id] ? storeData.stockOverrides[p.id].price : p.price
-        })),
+        ...baseProducts.map(p => {
+          const ov = storeData.stockOverrides[p.id];
+          let isInStock = true;
+          let currentPrice = p.price;
+          if (ov !== undefined && ov !== null) {
+            if (typeof ov === 'boolean') isInStock = ov;
+            else if (typeof ov === 'object') {
+              if ('inStock' in ov) isInStock = ov.inStock !== false;
+              if ('price' in ov && typeof ov.price === 'number' && ov.price > 0) currentPrice = ov.price;
+            }
+          }
+          return {
+            ...p,
+            isCustom: false,
+            inStock: isInStock,
+            price: currentPrice
+          };
+        }),
         ...(storeData.customProducts || []).map(cp => ({
           id: cp.id,
           title: cp.title,
@@ -740,15 +784,27 @@
       if (isCustom) {
         const item = storeData.customProducts.find(p => p.id === id);
         if (item) {
-          item.inStock = !item.inStock;
+          item.inStock = item.inStock === false ? true : false;
         }
       } else {
-        if (!storeData.stockOverrides[id]) {
-          const base = baseProducts.find(b => b.id === id);
-          storeData.stockOverrides[id] = { inStock: false, price: base ? base.price : 0 };
-        } else {
-          storeData.stockOverrides[id].inStock = !storeData.stockOverrides[id].inStock;
+        const current = storeData.stockOverrides[id];
+        const base = baseProducts.find(b => b.id === id);
+        const basePrice = base ? base.price : 0;
+
+        let currentlyInStock = true;
+        let currentPrice = basePrice;
+
+        if (typeof current === 'boolean') {
+          currentlyInStock = current;
+        } else if (typeof current === 'object' && current !== null) {
+          if ('inStock' in current) currentlyInStock = current.inStock !== false;
+          if ('price' in current && typeof current.price === 'number' && current.price > 0) currentPrice = current.price;
         }
+
+        storeData.stockOverrides[id] = {
+          inStock: !currentlyInStock,
+          price: currentPrice
+        };
       }
 
       if (navigator.vibrate) navigator.vibrate(40);
@@ -972,25 +1028,43 @@
       const dot = document.getElementById('cloud-status-dot');
       const text = document.getElementById('cloud-status-text');
       
-      dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
-      text.innerText = "Syncing...";
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+      if (text) text.innerText = "Syncing to Cloud...";
 
       try {
-        // BroadcastChannel to instantly sync with index.html in the same browser/PWA instance
+        // 1. Instant local BroadcastChannel for same-browser windows
         if ('BroadcastChannel' in window) {
           const bc = new BroadcastChannel('shanu_store_channel');
           bc.postMessage({ type: 'STORE_UPDATED', data: storeData });
           bc.close();
         }
 
-        setTimeout(() => {
-          dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-          text.innerText = "Live Cloud Sync";
-          if (isManual) showToast("Cloud Synced Successfully!");
-        }, 300);
+        // 2. Real-Time Multi-Device Cloud Sync
+        const payload = JSON.stringify({
+          name: 'shanu_atelier_store',
+          data: {
+            state: JSON.stringify(storeData)
+          }
+        });
+
+        const res = await fetch(CLOUD_STORE_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        });
+
+        if (res.ok) {
+          if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+          if (text) text.innerText = "Live Cloud Synced ✓";
+          if (isManual) showToast("Cloud Synced Across All Devices!");
+        } else {
+          throw new Error("HTTP " + res.status);
+        }
       } catch (err) {
-        dot.className = "w-2 h-2 rounded-full bg-stone-500";
-        text.innerText = "Local Mode";
+        console.warn("Cloud sync offline fallback", err);
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-500";
+        if (text) text.innerText = "Saved to Phone";
+        if (isManual) showToast("Saved to phone (Internet check needed)");
       }
     }
 
