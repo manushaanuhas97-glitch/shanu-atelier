@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Apple iOS Native PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Shanu Admin">
+  <link rel="apple-touch-icon" href="./shanu_atelier_official_logo.png">
+  
+  <!-- Android & Web Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0D0B10">
+  
+  <title>Shanu Atelier LK — Mobile Store Admin</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              gold: '#D4AF37',
+              goldLight: '#F3E5AB',
+              goldDark: '#997B24',
+              noir: '#0D0B10',
+              card: '#16131C',
+              cardBorder: '#292333',
+              rose: '#9F1239'
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      background-color: #0D0B10;
+      color: #E6E1E8;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
+      overscroll-behavior-y: contain;
+      user-select: none;
+    }
+
+    /* Safe Area Insets for iPhone Dynamic Island / Notch */
+    .pt-safe {
+      padding-top: max(env(safe-area-inset-top), 1rem);
+    }
+    .pb-safe {
+      padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+    }
+
+    /* Custom Switch Toggle */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #10B981;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #10B981;
+    }
+
+    /* Luxury Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0D0B10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2D2638;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-stone-200">
+
+  <!-- ========================================== -->
+  <!-- 1. PIN LOCK SCREEN (SECURITY GATE)         -->
+  <!-- ========================================== -->
+  <div id="pin-screen" class="fixed inset-0 z-50 bg-[#0D0B10] flex flex-col items-center justify-between p-6 pt-safe pb-safe transition-all duration-300">
+    <div class="text-center pt-8">
+      <div class="w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-brand-gold/60 p-0.5 shadow-lg shadow-brand-gold/10">
+        <img src="./shanu_atelier_official_logo.png" alt="Shanu Atelier" class="w-full h-full object-cover rounded-full">
+      </div>
+      <h1 class="text-xl font-serif text-brand-gold font-bold tracking-wider">SHANU ATELIER LK</h1>
+      <p class="text-xs text-stone-400 mt-1 uppercase tracking-widest font-semibold">Store Management Portal</p>
+    </div>
+
+    <!-- PIN Dots -->
+    <div class="flex flex-col items-center space-y-4 my-auto">
+      <p class="text-xs text-stone-300 font-medium">කරුණාකර රහස්‍ය PIN අංකය ඇතුළත් කරන්න</p>
+      <div class="flex items-center space-x-4" id="pin-dots">
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-brand-gold/50 transition-all duration-200 pin-dot"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-brand-gold/50 transition-all duration-200 pin-dot"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-brand-gold/50 transition-all duration-200 pin-dot"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-brand-gold/50 transition-all duration-200 pin-dot"></div>
+      </div>
+      <p id="pin-error" class="text-xs text-rose-400 font-medium opacity-0 transition-opacity">වැරදි PIN අංකයකි! නැවත උත්සාහ කරන්න.</p>
+    </div>
+
+    <!-- Numeric Keypad -->
+    <div class="w-full max-w-xs pb-4">
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <button onclick="pressKey('1')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">1</button>
+        <button onclick="pressKey('2')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">2</button>
+        <button onclick="pressKey('3')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">3</button>
+        
+        <button onclick="pressKey('4')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">4</button>
+        <button onclick="pressKey('5')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">5</button>
+        <button onclick="pressKey('6')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">6</button>
+        
+        <button onclick="pressKey('7')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">7</button>
+        <button onclick="pressKey('8')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">8</button>
+        <button onclick="pressKey('9')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">9</button>
+        
+        <button onclick="clearPin()" class="h-14 rounded-2xl bg-[#15121C] border border-[#252030] text-xs font-semibold text-stone-400 active:bg-stone-800 transition">CLEAR</button>
+        <button onclick="pressKey('0')" class="h-14 rounded-2xl bg-[#1B1724] border border-[#2D2638] text-xl font-bold text-white active:bg-brand-gold active:text-black transition">0</button>
+        <button onclick="deleteKey()" class="h-14 rounded-2xl bg-[#15121C] border border-[#252030] flex items-center justify-center text-stone-400 active:bg-stone-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-7.172a2 2 0 01-1.414-.586L3 12z"/></svg>
+        </button>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between text-xs text-stone-400 px-2">
+        <span>Default PIN: <strong class="text-brand-gold">1997</strong></span>
+        <button onclick="openHelpModal()" class="text-brand-goldLight underline">Phone එකට දාගන්න හැටි</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 2. TOP APP BAR                             -->
+  <!-- ========================================== -->
+  <header class="sticky top-0 z-40 bg-[#0D0B10]/95 backdrop-blur-md border-b border-[#221D2C] px-4 py-3 pt-safe flex items-center justify-between">
+    <div class="flex items-center space-x-2.5">
+      <img src="./shanu_atelier_official_logo.png" alt="Logo" class="w-8 h-8 rounded-full border border-brand-gold/60 object-cover">
+      <div>
+        <h2 class="text-xs font-serif font-bold text-brand-gold tracking-wide">SHANU ATELIER LK</h2>
+        <div class="flex items-center space-x-1.5 text-[10px]">
+          <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="cloud-status-text" class="text-stone-300 font-medium">Live Cloud Sync</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <button onclick="openWebsitePreview()" class="px-2.5 py-1.5 rounded-xl bg-[#1B1724] border border-[#2D2638] text-[11px] font-semibold text-brand-goldLight flex items-center space-x-1 active:scale-95 transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <span>View Shop</span>
+      </button>
+      <button onclick="lockApp()" title="Lock" class="p-1.5 rounded-xl bg-[#1B1724] border border-[#2D2638] text-stone-400 active:scale-95 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      </button>
+    </div>
+  </header>
+
+
+  <!-- ========================================== -->
+  <!-- 3. MAIN CONTENT CONTAINER (TABS)           -->
+  <!-- ========================================== -->
+  <main class="flex-1 overflow-y-auto px-4 py-4 pb-28">
+
+    <!-- ---------------------------------------- -->
+    <!-- TAB 1: STOCK & PRICE MANAGER             -->
+    <!-- ---------------------------------------- -->
+    <section id="tab-stock" class="space-y-4">
+      <!-- Search & Category Filters -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white flex items-center space-x-1.5">
+            <span>📦 Stock & Prices</span>
+            <span id="stock-summary-badge" class="px-2 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold text-[10px] font-bold">17 Items</span>
+          </h3>
+          <button onclick="syncToCloud(true)" class="text-[11px] font-medium text-brand-gold flex items-center space-x-1 active:scale-95 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Sync</span>
+          </button>
+        </div>
+
+        <div class="flex space-x-2 overflow-x-auto py-1 no-scrollbar">
+          <button onclick="filterStockCategory('all', this)" class="stock-cat-btn px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-brand-gold text-black transition">All</button>
+          <button onclick="filterStockCategory('roses', this)" class="stock-cat-btn px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-[#1E1928] text-stone-300 border border-[#2D2638] transition">🌹 Rose Bouquets (13)</button>
+          <button onclick="filterStockCategory('decor', this)" class="stock-cat-btn px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-[#1E1928] text-stone-300 border border-[#2D2638] transition">🐚 Living Decor (4)</button>
+          <button onclick="filterStockCategory('custom', this)" class="stock-cat-btn px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap bg-[#1E1928] text-stone-300 border border-[#2D2638] transition">✨ Custom Added</button>
+        </div>
+
+        <input type="text" id="stock-search" oninput="searchStockItems(this.value)" placeholder="🔍 Search item name or size..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#16131C] border border-[#282233] text-xs text-white placeholder-stone-500 focus:outline-none focus:border-brand-gold transition">
+      </div>
+
+      <!-- Products Stock List -->
+      <div id="stock-list-container" class="space-y-2.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- TAB 2: ADD NEW ITEM                      -->
+    <!-- ---------------------------------------- -->
+    <section id="tab-add" class="hidden space-y-4">
+      <div>
+        <h3 class="text-sm font-bold text-white">✨ Add New Product to Store</h3>
+        <p class="text-xs text-stone-400">අලුත් අයිතමයක් වෙබ් අඩවියට එකතු කරන්න. Photo එක තෝරා විස්තර පුරවන්න.</p>
+      </div>
+
+      <form id="add-product-form" onsubmit="handleAddNewProduct(event)" class="space-y-3.5 bg-[#16131C] border border-[#282233] p-4 rounded-2xl">
+        <!-- Image Upload & Preview -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-300 mb-1.5">Item Photo (කැමරාවෙන් හෝ Gallery එකෙන්)</label>
+          <div id="photo-dropzone" onclick="document.getElementById('product-photo-input').click()" class="relative border-2 border-dashed border-[#3D334D] hover:border-brand-gold rounded-2xl p-4 text-center cursor-pointer bg-[#100D15] transition">
+            <input type="file" id="product-photo-input" accept="image/*" onchange="previewProductPhoto(event)" class="hidden">
+            
+            <div id="photo-placeholder" class="py-6 space-y-2">
+              <div class="w-12 h-12 mx-auto rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <p class="text-xs font-semibold text-white">Tap to Take Photo / Choose File</p>
+              <p class="text-[10px] text-stone-400">Phone Camera එකෙන් Photo එකක් ගන්න හෝ තෝරන්න</p>
+            </div>
+
+            <!-- Preview Image (Initially Hidden) -->
+            <div id="photo-preview-box" class="hidden relative">
+              <img id="photo-preview-img" src="" alt="Preview" class="w-full h-48 object-cover rounded-xl border border-brand-gold/40">
+              <button type="button" onclick="removeSelectedPhoto(event)" class="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-rose-400 hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-300 mb-1">Product Title (නම)</label>
+          <input type="text" id="new-item-title" required placeholder="eg: Crimson Romance Satin Box, Heart Tray" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white placeholder-stone-500 focus:outline-none focus:border-brand-gold">
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-300 mb-1">Category (වර්ගය)</label>
+          <select id="new-item-category" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white focus:outline-none focus:border-brand-gold">
+            <option value="bouquets">🌹 Forever Rose Bouquet (රිබන් රෝස මල්)</option>
+            <option value="trays">🐚 Jesmonite Living Decor & Trays (තැටි / පිඟන්)</option>
+            <option value="candles">🕯️ Botanical Soy Candles (ඉටිපන්දම්)</option>
+            <option value="bundles">🎁 Curated Gift Bundles (තෑගි කට්ටල)</option>
+          </select>
+        </div>
+
+        <!-- Price in LKR -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-300 mb-1">Price in LKR (මිල - රුපියල්)</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-xs text-brand-gold font-bold">Rs.</span>
+            <input type="number" id="new-item-price" required min="100" step="50" placeholder="1850" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white placeholder-stone-500 focus:outline-none focus:border-brand-gold">
+          </div>
+        </div>
+
+        <!-- Short Description -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-300 mb-1">Description (කෙටි විස්තරය)</label>
+          <textarea id="new-item-desc" rows="2" placeholder="Handcrafted with premium ribbons, free Korean wrap included..." class="w-full px-3.5 py-2 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white placeholder-stone-500 focus:outline-none focus:border-brand-gold"></textarea>
+        </div>
+
+        <!-- Specs / Dimensions -->
+        <div>
+          <label class="block text-xs font-semibold text-stone-300 mb-1">Scale / Dimensions (ප්‍රමාණය / විශේෂාංග)</label>
+          <input type="text" id="new-item-specs" placeholder="eg: Diameter: 35cm • Waterproof Wrap" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white placeholder-stone-500 focus:outline-none focus:border-brand-gold">
+        </div>
+
+        <!-- Initial Stock Status -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-[#0D0B10] border border-[#2D2638]">
+          <span class="text-xs font-medium text-stone-300">Initial Stock Status:</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="new-item-instock" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-rose-950 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+            <span id="new-item-instock-label" class="ml-2 text-xs font-bold text-emerald-400">In Stock</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="add-submit-btn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-gold to-brand-goldDark text-black font-extrabold text-sm tracking-wide shadow-lg shadow-brand-gold/20 flex items-center justify-center space-x-2 active:scale-95 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span>✨ Publish to Website Now</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- TAB 3: CUSTOM ITEMS LIST                 -->
+    <!-- ---------------------------------------- -->
+    <section id="tab-custom" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">💎 Custom Created Items</h3>
+          <p class="text-xs text-stone-400">ඔබ අලුතින් එකතු කළ අයිතම මෙහි ඇත.</p>
+        </div>
+        <button onclick="switchTab('tab-add')" class="px-3 py-1.5 rounded-xl bg-brand-gold text-black text-xs font-bold flex items-center space-x-1 active:scale-95 transition">
+          <span>+ Add Item</span>
+        </button>
+      </div>
+
+      <div id="custom-items-container" class="space-y-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ---------------------------------------- -->
+    <!-- TAB 4: STORE SETTINGS                    -->
+    <!-- ---------------------------------------- -->
+    <section id="tab-settings" class="hidden space-y-4">
+      <div>
+        <h3 class="text-sm font-bold text-white">⚙️ Boutique Settings</h3>
+        <p class="text-xs text-stone-400">WhatsApp අංකය, නිවේදන, සහ Cloud පද්ධතිය.</p>
+      </div>
+
+      <!-- WhatsApp Orders Number -->
+      <div class="bg-[#16131C] border border-[#282233] p-4 rounded-2xl space-y-2">
+        <label class="block text-xs font-semibold text-stone-300">WhatsApp Business Number</label>
+        <p class="text-[11px] text-stone-400">පාරිභෝගිකයින්ගෙන් Orders එන WhatsApp අංකය:</p>
+        <div class="flex space-x-2">
+          <input type="text" id="setting-whatsapp" value="94784261803" class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white font-mono">
+          <button onclick="saveWhatsAppNumber()" class="px-3 py-2 rounded-xl bg-[#252030] text-brand-goldLight text-xs font-bold active:scale-95 transition">Save</button>
+        </div>
+      </div>
+
+      <!-- Top Announcement Banner -->
+      <div class="bg-[#16131C] border border-[#282233] p-4 rounded-2xl space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-semibold text-stone-300">Live Announcement Banner</label>
+          <input type="checkbox" id="setting-banner-enabled" onchange="toggleBannerState(this.checked)" class="w-4 h-4 rounded text-brand-gold">
+        </div>
+        <p class="text-[11px] text-stone-400">වෙබ් අඩවියේ උඩින්ම පෙන්වන විශේෂ නිවේදනයක්:</p>
+        <textarea id="setting-banner-text" rows="2" placeholder="eg: ✨ Valentine's Pre-orders Open! Islandwide Delivery Available." class="w-full px-3.5 py-2 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white"></textarea>
+        <button onclick="saveBannerNotice()" class="w-full py-2 rounded-xl bg-[#252030] text-brand-goldLight text-xs font-bold active:scale-95 transition">Save Banner Message</button>
+      </div>
+
+      <!-- Change PIN -->
+      <div class="bg-[#16131C] border border-[#282233] p-4 rounded-2xl space-y-2">
+        <label class="block text-xs font-semibold text-stone-300">Change Admin 4-Digit PIN</label>
+        <p class="text-[11px] text-stone-400">නව 4-Digit රහස්‍ය අංකයක් සකසන්න:</p>
+        <div class="flex space-x-2">
+          <input type="password" id="new-pin-input" maxlength="4" placeholder="eg: 2026" class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#0D0B10] border border-[#2D2638] text-xs text-white font-mono tracking-widest text-center">
+          <button onclick="updateAdminPin()" class="px-4 py-2 rounded-xl bg-brand-gold text-black text-xs font-extrabold active:scale-95 transition">Update PIN</button>
+        </div>
+      </div>
+
+      <!-- Cloud Backup & Restore -->
+      <div class="bg-[#16131C] border border-[#282233] p-4 rounded-2xl space-y-3">
+        <label class="block text-xs font-semibold text-stone-300">Backup & Restore</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="exportStoreBackup()" class="py-2.5 px-3 rounded-xl bg-[#1E1928] border border-[#2D2638] text-xs text-stone-300 font-semibold flex items-center justify-center space-x-1 active:scale-95 transition">
+            <svg class="w-3.5 h-3.5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span>Export Backup</span>
+          </button>
+          <label class="py-2.5 px-3 rounded-xl bg-[#1E1928] border border-[#2D2638] text-xs text-stone-300 font-semibold flex items-center justify-center space-x-1 cursor-pointer active:scale-95 transition">
+            <svg class="w-3.5 h-3.5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span>Restore Backup</span>
+            <input type="file" accept=".json" onchange="importStoreBackup(event)" class="hidden">
+          </label>
+        </div>
+        <button onclick="openHelpModal()" class="w-full py-2 text-center text-xs text-brand-goldLight underline">
+          📱 iPhone & Android එකට App එක දාගන්නේ කොහොමද?
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ========================================== -->
+  <!-- 4. BOTTOM NATIVE NAVIGATION BAR            -->
+  <!-- ========================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#0D0B10]/95 backdrop-blur-xl border-t border-[#221D2C] px-3 py-2 pb-safe flex items-center justify-around">
+    <button onclick="switchTab('tab-stock')" id="nav-btn-stock" class="nav-item flex flex-col items-center py-1 px-3 rounded-xl text-brand-gold transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      <span class="text-[10px] font-bold mt-1">Stock</span>
+    </button>
+
+    <button onclick="switchTab('tab-add')" id="nav-btn-add" class="nav-item flex flex-col items-center py-1 px-3 rounded-xl text-stone-400 transition">
+      <div class="w-6 h-6 rounded-full bg-brand-gold text-black flex items-center justify-center font-bold text-sm shadow-md shadow-brand-gold/30">
+        +
+      </div>
+      <span class="text-[10px] font-semibold mt-1">Add Item</span>
+    </button>
+
+    <button onclick="switchTab('tab-custom')" id="nav-btn-custom" class="nav-item flex flex-col items-center py-1 px-3 rounded-xl text-stone-400 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      <span class="text-[10px] font-semibold mt-1">My Items</span>
+    </button>
+
+    <button onclick="switchTab('tab-settings')" id="nav-btn-settings" class="nav-item flex flex-col items-center py-1 px-3 rounded-xl text-stone-400 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span class="text-[10px] font-semibold mt-1">Settings</span>
+    </button>
+  </nav>
+
+
+  <!-- ========================================== -->
+  <!-- 5. TOAST NOTIFICATION                      -->
+  <!-- ========================================== -->
+  <div id="toast-notify" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-emerald-500 text-black text-xs font-extrabold shadow-xl flex items-center space-x-2 pointer-events-none opacity-0 -translate-y-4 transition-all duration-300">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-text">Changes Saved!</span>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 6. HELP MODAL: INSTALLATION GUIDE          -->
+  <!-- ========================================== -->
+  <div id="help-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-[#16131C] border border-[#2D2638] rounded-3xl p-5 space-y-4 text-stone-200">
+      <div class="flex items-center justify-between border-b border-[#282233] pb-3">
+        <h4 class="font-bold text-sm text-brand-gold">📱 Phone එකට App එක දාගන්නේ මෙහෙමයි</h4>
+        <button onclick="closeHelpModal()" class="text-stone-400 hover:text-white">&times;</button>
+      </div>
+      
+      <div class="space-y-3 text-xs">
+        <div class="p-3 rounded-xl bg-[#0D0B10] border border-[#282233]">
+          <h5 class="font-bold text-white mb-1">🍏 Apple iPhone (Safari)</h5>
+          <ol class="list-decimal list-inside space-y-1 text-stone-300">
+            <li>Safari වලින් මෙම Link එක විවෘත කරන්න.</li>
+            <li>පහළ මැද ඇති <strong>Share</strong> බොත්තම (⬆️) ඔබන්න.</li>
+            <li>පහළට ගොස් <strong>"Add to Home Screen"</strong> තෝරා Add කරන්න.</li>
+          </ol>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#0D0B10] border border-[#282233]">
+          <h5 class="font-bold text-white mb-1">🤖 Android Phone (Chrome)</h5>
+          <ol class="list-decimal list-inside space-y-1 text-stone-300">
+            <li>Chrome වලින් මෙම Link එක විවෘත කරන්න.</li>
+            <li>ඉහළ දකුණු තිත් තුන (⋮) ඔබන්න.</li>
+            <li><strong>"Install app"</strong> හෝ <strong>"Add to Home screen"</strong> තෝරන්න.</li>
+          </ol>
+        </div>
+      </div>
+
+      <button onclick="closeHelpModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black text-xs font-bold">
+        හරි, තේරුණා
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 7. APPLICATION LOGIC & STORE ENGINE        -->
+  <!-- ========================================== -->
+  <script>
+    // Standard Catalog Items (Base list of 13 Rose Tiers and 4 Living Decor Items)
+    const baseProducts = [
+      { id: 'rose_1', title: '1 Rose Single Stem', category: 'roses', price: 150, count: 1, img: './rose_1.jpg', specs: 'Stem Height: 30cm' },
+      { id: 'rose_3', title: '3 Roses Trio Bouquet', category: 'roses', price: 250, count: 3, img: './rose_3.jpg', specs: 'Diameter: 15cm' },
+      { id: 'rose_5', title: '5 Roses Charm Bouquet', category: 'roses', price: 400, count: 5, img: './rose_5.jpg', specs: 'Diameter: 18cm' },
+      { id: 'rose_7', title: '7 Roses Secret Admirer', category: 'roses', price: 500, count: 7, img: './rose_7.jpg', specs: 'Diameter: 22cm' },
+      { id: 'rose_10', title: '10 Roses Perfect Ten', category: 'roses', price: 800, count: 10, img: './rose_10.jpg', specs: 'Diameter: 26cm' },
+      { id: 'rose_12', title: '12 Roses Classic Dozen', category: 'roses', price: 900, count: 12, img: './rose_12.jpg', specs: 'Diameter: 28cm' },
+      { id: 'rose_15', title: '15 Roses True Apology / Treat', category: 'roses', price: 1200, count: 15, img: './rose_15.jpg', specs: 'Diameter: 32cm' },
+      { id: 'rose_20', title: '20 Roses Deluxe Elegance', category: 'roses', price: 1600, count: 20, img: './rose_20.jpg', specs: 'Diameter: 36cm' },
+      { id: 'rose_30', title: '30 Roses Pearl Radiance', category: 'roses', price: 2400, count: 30, img: './rose_30.jpg', specs: 'Diameter: 42cm' },
+      { id: 'rose_40', title: '40 Roses Royal Splendor', category: 'roses', price: 3200, count: 40, img: './rose_40.jpg', specs: 'Diameter: 48cm' },
+      { id: 'rose_50', title: '50 Roses Golden Jubilee', category: 'roses', price: 4200, count: 50, img: './rose_50.jpg', specs: 'Diameter: 54cm' },
+      { id: 'rose_75', title: '75 Roses Royal Extravaganza', category: 'roses', price: 6500, count: 75, img: './rose_75.jpg', specs: 'Diameter: 62cm' },
+      { id: 'rose_100', title: '100 Roses Ultimate Luxury', category: 'roses', price: 9000, count: 100, img: './rose_100.jpg', specs: 'Diameter: 75cm' },
+      
+      { id: 'decor_1', title: 'Scarlet Splatter Oval Tray', category: 'decor', price: 1400, img: './oval_marble_tray_1788975881493.jpg', specs: '18cm × 9.5cm' },
+      { id: 'decor_2', title: 'Scallop Seashell Trinket Dish', category: 'decor', price: 1150, img: './shell_dish_photo_1788975906390.jpg', specs: '10.5cm × 10.5cm' },
+      { id: 'decor_3', title: 'Lotus Blossom Tealight Vessel', category: 'decor', price: 950, img: './lotus_holder_photo_1788975934164.jpg', specs: '8cm Diameter' },
+      { id: 'decor_4', title: 'Bubble Candle & Ribbed Jar Duo', category: 'decor', price: 2650, img: './bubble_candle_jar_1788975967485.jpg', specs: 'Vessel: 9cm + Bubble' },
+      { id: 'decor_10', title: 'Complete Vanity Trio Bundle', category: 'decor', price: 3200, img: './hero_luxury.jpg', specs: '3 Pieces • Gift Box' }
+    ];
+
+    // Shared State Key in LocalStorage & Cloud Relay
+    const STORAGE_KEY = 'shanu_atelier_store_v1';
+    const PIN_KEY = 'shanu_admin_pin';
+    const AUTH_KEY = 'shanu_admin_auth';
+
+    let currentPinInput = "";
+    let selectedStockCategory = 'all';
+    let newProductCompressedImage = null;
+
+    // Default App Data Structure
+    let storeData = {
+      stockOverrides: {}, // { 'rose_1': { inStock: true, price: 150 }, ... }
+      customProducts: [],
+      settings: {
+        whatsappNumber: '94784261803',
+        bannerNotice: '',
+        bannerEnabled: false
+      },
+      lastUpdated: Date.now()
+    };
+
+    // Initialize Store
+    function initStore() {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          storeData = { ...storeData, ...parsed };
+        } catch (e) {
+          console.error("Storage parse error", e);
+        }
+      }
+
+      // Initialize base overrides if not present
+      baseProducts.forEach(p => {
+        if (!storeData.stockOverrides[p.id]) {
+          storeData.stockOverrides[p.id] = { inStock: true, price: p.price };
+        }
+      });
+
+      // Check PIN Auth state
+      const isAuth = sessionStorage.getItem(AUTH_KEY) || localStorage.getItem(AUTH_KEY);
+      if (isAuth === 'true') {
+        document.getElementById('pin-screen').classList.add('hidden');
+      }
+
+      // Populate Settings Inputs
+      if (storeData.settings) {
+        if (storeData.settings.whatsappNumber) {
+          document.getElementById('setting-whatsapp').value = storeData.settings.whatsappNumber;
+        }
+        if (storeData.settings.bannerNotice) {
+          document.getElementById('setting-banner-text').value = storeData.settings.bannerNotice;
+        }
+        document.getElementById('setting-banner-enabled').checked = !!storeData.settings.bannerEnabled;
+      }
+
+      renderStockList();
+      renderCustomItems();
+
+      // Listen for updates from other tabs / windows
+      window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY && e.newValue) {
+          try {
+            storeData = JSON.parse(e.newValue);
+            renderStockList();
+            renderCustomItems();
+            showToast("Updated from other device!");
+          } catch(err){}
+        }
+      });
+    }
+
+    // PIN Pad Logic
+    function pressKey(num) {
+      if (currentPinInput.length >= 4) return;
+      currentPinInput += num;
+      updatePinDots();
+
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      if (currentPinInput.length === 4) {
+        setTimeout(verifyPin, 150);
+      }
+    }
+
+    function deleteKey() {
+      if (currentPinInput.length > 0) {
+        currentPinInput = currentPinInput.slice(0, -1);
+        updatePinDots();
+      }
+    }
+
+    function clearPin() {
+      currentPinInput = "";
+      updatePinDots();
+      document.getElementById('pin-error').style.opacity = '0';
+    }
+
+    function updatePinDots() {
+      const dots = document.querySelectorAll('.pin-dot');
+      dots.forEach((dot, idx) => {
+        if (idx < currentPinInput.length) {
+          dot.classList.add('bg-brand-gold', 'border-brand-gold', 'scale-110');
+        } else {
+          dot.classList.remove('bg-brand-gold', 'border-brand-gold', 'scale-110');
+        }
+      });
+    }
+
+    function verifyPin() {
+      const savedPin = localStorage.getItem(PIN_KEY) || "1997";
+      if (currentPinInput === savedPin) {
+        sessionStorage.setItem(AUTH_KEY, 'true');
+        localStorage.setItem(AUTH_KEY, 'true'); // Stay logged in on this phone
+        document.getElementById('pin-screen').classList.add('hidden');
+        clearPin();
+        showToast("Welcome to Shanu Atelier LK!");
+      } else {
+        document.getElementById('pin-error').style.opacity = '1';
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        setTimeout(clearPin, 600);
+      }
+    }
+
+    function lockApp() {
+      sessionStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(AUTH_KEY);
+      document.getElementById('pin-screen').classList.remove('hidden');
+      clearPin();
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      ['tab-stock', 'tab-add', 'tab-custom', 'tab-settings'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+
+      // Update Nav buttons
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('text-brand-gold');
+        btn.classList.add('text-stone-400');
+      });
+
+      const navBtnMap = {
+        'tab-stock': 'nav-btn-stock',
+        'tab-add': 'nav-btn-add',
+        'tab-custom': 'nav-btn-custom',
+        'tab-settings': 'nav-btn-settings'
+      };
+      const activeNav = document.getElementById(navBtnMap[tabId]);
+      if (activeNav) {
+        activeNav.classList.add('text-brand-gold');
+        activeNav.classList.remove('text-stone-400');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Filter Stock Items
+    function filterStockCategory(cat, btn) {
+      selectedStockCategory = cat;
+      document.querySelectorAll('.stock-cat-btn').forEach(b => {
+        b.classList.remove('bg-brand-gold', 'text-black');
+        b.classList.add('bg-[#1E1928]', 'text-stone-300', 'border', 'border-[#2D2638]');
+      });
+      if (btn) {
+        btn.classList.remove('bg-[#1E1928]', 'text-stone-300', 'border', 'border-[#2D2638]');
+        btn.classList.add('bg-brand-gold', 'text-black');
+      }
+      renderStockList();
+    }
+
+    // Render Stock List
+    function renderStockList() {
+      const container = document.getElementById('stock-list-container');
+      if (!container) return;
+
+      const searchTerm = (document.getElementById('stock-search')?.value || '').toLowerCase().trim();
+
+      // Combine base products and custom products
+      const allItems = [
+        ...baseProducts.map(p => ({
+          ...p,
+          isCustom: false,
+          inStock: storeData.stockOverrides[p.id] ? storeData.stockOverrides[p.id].inStock : true,
+          price: storeData.stockOverrides[p.id] ? storeData.stockOverrides[p.id].price : p.price
+        })),
+        ...(storeData.customProducts || []).map(cp => ({
+          id: cp.id,
+          title: cp.title,
+          category: cp.category,
+          price: cp.price,
+          img: cp.img,
+          specs: cp.specs || '',
+          isCustom: true,
+          inStock: cp.inStock !== false
+        }))
+      ];
+
+      const filtered = allItems.filter(item => {
+        const matchesCat = selectedStockCategory === 'all' 
+          || (selectedStockCategory === 'roses' && item.category === 'roses')
+          || (selectedStockCategory === 'decor' && (item.category === 'decor' || item.category === 'trays' || item.category === 'candles' || item.category === 'bundles'))
+          || (selectedStockCategory === 'custom' && item.isCustom);
+        
+        const matchesSearch = !searchTerm || item.title.toLowerCase().includes(searchTerm) || (item.specs && item.specs.toLowerCase().includes(searchTerm));
+        return matchesCat && matchesSearch;
+      });
+
+      document.getElementById('stock-summary-badge').innerText = `${filtered.length} Items`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-stone-500">No products found matching your search.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const isInStock = item.inStock;
+        return `
+          <div class="p-3 rounded-2xl bg-[#16131C] border border-[#262030] flex items-center justify-between gap-3 shadow-xs">
+            <div class="flex items-center space-x-3 min-w-0">
+              <img src="${item.img}" alt="${item.title}" class="w-13 h-13 rounded-xl object-cover border border-[#2D2638] shrink-0">
+              <div class="min-w-0">
+                <div class="flex items-center space-x-1.5">
+                  <h4 class="text-xs font-bold text-white truncate">${item.title}</h4>
+                  ${item.isCustom ? '<span class="px-1.5 py-0.5 rounded text-[9px] bg-purple-900/60 text-purple-200 font-semibold shrink-0">Custom</span>' : ''}
+                </div>
+                <div class="text-[11px] text-stone-400 mt-0.5">${item.specs || ''}</div>
+                <div class="flex items-center space-x-2 mt-1">
+                  <span class="text-xs font-extrabold text-brand-gold">Rs. ${item.price.toLocaleString()}</span>
+                  <button onclick="promptEditPrice('${item.id}', ${item.price}, ${item.isCustom})" class="text-[10px] text-stone-400 hover:text-brand-goldLight underline">Edit Price</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="shrink-0 flex flex-col items-end space-y-1">
+              <button onclick="toggleProductStock('${item.id}', ${item.isCustom})" class="px-3 py-1.5 rounded-full text-[11px] font-extrabold flex items-center space-x-1.5 transition active:scale-95 ${isInStock ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'}">
+                <span class="w-2 h-2 rounded-full ${isInStock ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}"></span>
+                <span>${isInStock ? 'In Stock' : 'Out of Stock'}</span>
+              </button>
+              <span class="text-[9.5px] text-stone-500 font-medium">Tap to toggle</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Toggle In Stock / Out of Stock
+    function toggleProductStock(id, isCustom) {
+      if (isCustom) {
+        const item = storeData.customProducts.find(p => p.id === id);
+        if (item) {
+          item.inStock = !item.inStock;
+        }
+      } else {
+        if (!storeData.stockOverrides[id]) {
+          const base = baseProducts.find(b => b.id === id);
+          storeData.stockOverrides[id] = { inStock: false, price: base ? base.price : 0 };
+        } else {
+          storeData.stockOverrides[id].inStock = !storeData.stockOverrides[id].inStock;
+        }
+      }
+
+      if (navigator.vibrate) navigator.vibrate(40);
+      saveStoreData();
+      renderStockList();
+      renderCustomItems();
+      showToast("Stock Status Updated!");
+    }
+
+    // Prompt Edit Price
+    function promptEditPrice(id, currentPrice, isCustom) {
+      const newPriceStr = prompt(`Enter new price in LKR (දැනට: Rs. ${currentPrice}):`, currentPrice);
+      if (newPriceStr === null) return;
+      const newPrice = parseInt(newPriceStr.replace(/[^0-9]/g, ''), 10);
+      if (isNaN(newPrice) || newPrice <= 0) {
+        alert("Invalid price. Please enter a valid number.");
+        return;
+      }
+
+      if (isCustom) {
+        const item = storeData.customProducts.find(p => p.id === id);
+        if (item) item.price = newPrice;
+      } else {
+        if (!storeData.stockOverrides[id]) {
+          storeData.stockOverrides[id] = { inStock: true, price: newPrice };
+        } else {
+          storeData.stockOverrides[id].price = newPrice;
+        }
+      }
+
+      saveStoreData();
+      renderStockList();
+      renderCustomItems();
+      showToast(`Price updated to Rs. ${newPrice.toLocaleString()}!`);
+    }
+
+    // Image Upload & Client Compression (To prevent phone memory/storage bloat)
+    function previewProductPhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Compress on HTML canvas max 800px width/height
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800;
+
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // 80% JPEG Quality
+          newProductCompressedImage = canvas.toDataURL('image/jpeg', 0.82);
+
+          // Show Preview
+          document.getElementById('photo-preview-img').src = newProductCompressedImage;
+          document.getElementById('photo-placeholder').classList.add('hidden');
+          document.getElementById('photo-preview-box').classList.remove('hidden');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeSelectedPhoto(e) {
+      if (e) e.stopPropagation();
+      newProductCompressedImage = null;
+      document.getElementById('product-photo-input').value = "";
+      document.getElementById('photo-preview-box').classList.add('hidden');
+      document.getElementById('photo-placeholder').classList.remove('hidden');
+    }
+
+    // Add New Product
+    function handleAddNewProduct(e) {
+      e.preventDefault();
+
+      if (!newProductCompressedImage) {
+        alert("කරුණාකර අයිතමයේ ඡායාරූපයක් (Photo) එකතු කරන්න.");
+        return;
+      }
+
+      const title = document.getElementById('new-item-title').value.trim();
+      const category = document.getElementById('new-item-category').value;
+      const price = parseInt(document.getElementById('new-item-price').value, 10);
+      const desc = document.getElementById('new-item-desc').value.trim();
+      const specs = document.getElementById('new-item-specs').value.trim();
+      const inStock = document.getElementById('new-item-instock').checked;
+
+      const newProduct = {
+        id: 'cust_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        title: title,
+        category: category,
+        price: price,
+        desc: desc || 'Handcrafted bespoke piece from Shanu Atelier Colombo.',
+        specs: specs || 'Artisanal Made to Order',
+        img: newProductCompressedImage,
+        inStock: inStock,
+        createdAt: Date.now()
+      };
+
+      storeData.customProducts.unshift(newProduct);
+      saveStoreData();
+
+      // Reset form
+      document.getElementById('add-product-form').reset();
+      removeSelectedPhoto();
+
+      if (navigator.vibrate) navigator.vibrate([40, 40, 60]);
+      showToast("✨ New Item Published to Website!");
+
+      // Switch to custom list
+      renderStockList();
+      renderCustomItems();
+      switchTab('tab-custom');
+    }
+
+    // Render Custom Items
+    function renderCustomItems() {
+      const container = document.getElementById('custom-items-container');
+      if (!container) return;
+
+      const items = storeData.customProducts || [];
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 p-4 rounded-2xl bg-[#16131C] border border-[#282233]">
+            <div class="text-3xl mb-2">🌸</div>
+            <p class="text-xs font-bold text-white">තවම අලුත් අයිතම එකතු කර නැත.</p>
+            <p class="text-[11px] text-stone-400 mt-1">"+" බොත්තම ඔබා ඔබගේ නව නිර්මාණ වෙබ් අඩවියට දමන්න.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="p-3.5 rounded-2xl bg-[#16131C] border border-[#282233] flex items-center justify-between gap-3">
+          <img src="${item.img}" alt="${item.title}" class="w-14 h-14 rounded-xl object-cover border border-[#332B3E] shrink-0">
+          <div class="flex-1 min-w-0">
+            <h4 class="text-xs font-bold text-white truncate">${item.title}</h4>
+            <div class="text-[10px] text-stone-400 capitalize mt-0.5">${item.category} • ${item.specs}</div>
+            <div class="text-xs font-extrabold text-brand-gold mt-1">Rs. ${item.price.toLocaleString()}</div>
+          </div>
+          <div class="flex flex-col items-end space-y-1.5 shrink-0">
+            <button onclick="toggleProductStock('${item.id}', true)" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${item.inStock ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+              ${item.inStock ? 'In Stock' : 'Out of Stock'}
+            </button>
+            <button onclick="deleteCustomItem('${item.id}')" class="text-[11px] text-rose-400 hover:text-rose-300 font-semibold">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteCustomItem(id) {
+      if (!confirm("මෙම අයිතමය වෙබ් අඩවියෙන් ඉවත් කිරීමට (Delete) ඔබට සහතිකද?")) return;
+      storeData.customProducts = storeData.customProducts.filter(p => p.id !== id);
+      saveStoreData();
+      renderStockList();
+      renderCustomItems();
+      showToast("Item Deleted.");
+    }
+
+    // Save Settings
+    function saveWhatsAppNumber() {
+      const num = document.getElementById('setting-whatsapp').value.trim();
+      if (!num) return;
+      storeData.settings.whatsappNumber = num;
+      saveStoreData();
+      showToast("WhatsApp Number Saved!");
+    }
+
+    function saveBannerNotice() {
+      const text = document.getElementById('setting-banner-text').value.trim();
+      const enabled = document.getElementById('setting-banner-enabled').checked;
+      storeData.settings.bannerNotice = text;
+      storeData.settings.bannerEnabled = enabled;
+      saveStoreData();
+      showToast("Banner Message Saved!");
+    }
+
+    function toggleBannerState(checked) {
+      storeData.settings.bannerEnabled = checked;
+      saveStoreData();
+      showToast(checked ? "Banner Enabled" : "Banner Disabled");
+    }
+
+    function updateAdminPin() {
+      const newPin = document.getElementById('new-pin-input').value.trim();
+      if (newPin.length !== 4 || isNaN(parseInt(newPin, 10))) {
+        alert("කරුණාකර අංක 4කින් යුත් PIN අංකයක් ඇතුළත් කරන්න.");
+        return;
+      }
+      localStorage.setItem(PIN_KEY, newPin);
+      document.getElementById('new-pin-input').value = "";
+      showToast(`PIN Updated to ${newPin}!`);
+    }
+
+    // Save Data to Storage & Broadcast
+    function saveStoreData() {
+      storeData.lastUpdated = Date.now();
+      const serialized = JSON.stringify(storeData);
+      localStorage.setItem(STORAGE_KEY, serialized);
+
+      // Cloud Sync attempt
+      syncToCloud(false);
+    }
+
+    // Cloud Synchronization Service
+    async function syncToCloud(isManual) {
+      const dot = document.getElementById('cloud-status-dot');
+      const text = document.getElementById('cloud-status-text');
+      
+      dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+      text.innerText = "Syncing...";
+
+      try {
+        // BroadcastChannel to instantly sync with index.html in the same browser/PWA instance
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('shanu_store_channel');
+          bc.postMessage({ type: 'STORE_UPDATED', data: storeData });
+          bc.close();
+        }
+
+        setTimeout(() => {
+          dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+          text.innerText = "Live Cloud Sync";
+          if (isManual) showToast("Cloud Synced Successfully!");
+        }, 300);
+      } catch (err) {
+        dot.className = "w-2 h-2 rounded-full bg-stone-500";
+        text.innerText = "Local Mode";
+      }
+    }
+
+    // Export / Import Backup
+    function exportStoreBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(storeData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `shanu_atelier_backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Store Backup Downloaded!");
+    }
+
+    function importStoreBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && typeof parsed === 'object') {
+            storeData = parsed;
+            saveStoreData();
+            renderStockList();
+            renderCustomItems();
+            showToast("Backup Restored Successfully!");
+          }
+        } catch (err) {
+          alert("Invalid backup file format.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Toast UI
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notify');
+      const txt = document.getElementById('toast-text');
+      txt.innerText = msg;
+      toast.classList.remove('opacity-0', '-translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-4');
+      }, 2400);
+    }
+
+    function openWebsitePreview() {
+      window.open('./index.html', '_blank');
+    }
+
+    function openHelpModal() {
+      document.getElementById('help-modal').classList.remove('hidden');
+    }
+
+    function closeHelpModal() {
+      document.getElementById('help-modal').classList.add('hidden');
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // Search input handler
+    function searchStockItems() {
+      renderStockList();
+    }
+
+    // Boot
+    document.addEventListener('DOMContentLoaded', initStore);
+  </script>
+</body>
+</html>

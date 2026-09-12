@@ -11,6 +11,13 @@
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https: data:; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://www.gstatic.com; connect-src 'self' https:;">
   
+  <!-- Web App Manifest & iOS PWA Support -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Shanu Atelier">
+  <link rel="apple-touch-icon" href="./shanu_atelier_official_logo.png">
+
   <title>SHANU ATELIER | Haute Floral Atelier & Bespoke Living Decor Colombo</title>
   
   <!-- Official Tailwind CSS CDN -->
@@ -140,6 +147,13 @@
   </style>
 </head>
 <body class="antialiased selection:bg-rose-100 selection:text-rose-900 min-h-screen flex flex-col">
+
+  <!-- Live Dynamic Store Announcement Banner (Controlled from Mobile Admin App) -->
+  <div id="dynamic-store-banner" class="hidden bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 text-stone-950 text-xs font-bold py-2.5 px-4 text-center tracking-wide shadow-md flex items-center justify-center gap-2">
+    <span>✦</span>
+    <span id="dynamic-store-banner-text"></span>
+    <span>✦</span>
+  </div>
 
   <!-- ==========================================================================
        1. TOP BOUTIQUE ANNOUNCEMENT BAR
@@ -513,14 +527,21 @@
             <span class="text-[11px] font-semibold text-stone-500" id="builder-per-rose">Rs. 75 / rose</span>
           </div>
 
+          <div id="builder-stock-alert" class="hidden">
+            <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs font-bold text-center flex items-center justify-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span>Currently Out of Stock (Pre-order Available)</span>
+            </div>
+          </div>
+
           <div class="space-y-2">
-            <button onclick="orderCustomBouquetWhatsApp()" class="w-full py-3.5 px-5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition shadow flex items-center justify-center gap-2 cursor-pointer">
+            <button id="builder-order-btn" onclick="orderCustomBouquetWhatsApp()" class="w-full py-3.5 px-5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold uppercase tracking-wider transition shadow flex items-center justify-center gap-2 cursor-pointer">
               <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.072-1.87-.442-1.391-.577-2.316-1.993-2.385-2.086-.069-.092-.563-.748-.563-1.424 0-.676.354-1.008.48-1.144.125-.136.273-.171.365-.171.092 0 .183.001.263.005.084.004.197-.032.308.234.114.272.39 1.008.424 1.077.034.069.057.15.011.242-.046.092-.069.15-.137.23-.069.079-.144.177-.206.238-.069.068-.141.142-.061.279.08.137.355.586.762.949.525.467.968.612 1.106.68.137.069.217.058.297-.034.08-.093.343-.401.435-.539.091-.137.183-.114.308-.068.126.046.79.373.927.441.137.069.229.103.263.161.034.057.034.333-.11.738zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.662 1.436 5.178L2 22l4.954-1.399A9.956 9.956 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
-              <span>Order on WhatsApp (COD)</span>
+              <span id="builder-order-btn-text">Order on WhatsApp (COD)</span>
             </button>
-            <button onclick="addCustomBouquetToCart()" class="w-full py-3 px-5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2">
+            <button id="builder-add-btn" onclick="addCustomBouquetToCart()" class="w-full py-3 px-5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-              <span>Add Custom Bouquet to Bag</span>
+              <span id="builder-add-btn-text">Add Custom Bouquet to Bag</span>
             </button>
           </div>
 
@@ -531,6 +552,26 @@
 
       </div>
 
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5B. DYNAMIC CUSTOM ATELIER ARRIVALS (ADDED FROM MOBILE ADMIN APP)
+       ========================================================================== -->
+  <section id="custom-creations-section" class="hidden px-3 sm:px-8 py-8 max-w-7xl mx-auto w-full">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+      <div>
+        <span class="text-xs uppercase font-bold tracking-widest text-amber-700 dark:text-amber-400">✦ New Atelier Arrivals</span>
+        <h3 class="serif-title text-2xl sm:text-4xl font-bold text-stone-900 dark:text-white mt-1">
+          Bespoke Seasonal Additions
+        </h3>
+        <p class="text-xs sm:text-sm text-stone-500 mt-1">
+          New handcrafted creations added directly by our boutique atelier.
+        </p>
+      </div>
+    </div>
+    <div id="custom-creations-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Populated dynamically from Admin App data -->
     </div>
   </section>
 
@@ -701,6 +742,9 @@
         <a href="#trio-bundle" class="text-stone-300 hover:text-white transition">Gift Suites</a>
         <a href="https://wa.me/94784261803" target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:underline">Concierge: 078 426 1803</a>
         <a href="https://wa.me/94760870140" target="_blank" rel="noopener noreferrer" class="text-stone-300 hover:underline">076 087 0140</a>
+        <a href="./admin.html" class="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 font-bold border border-amber-400/40 px-2.5 py-1 rounded-full bg-white/5 transition">
+          <span>🔒</span> <span>Atelier Admin</span>
+        </a>
       </div>
 
     </div>
@@ -1134,6 +1178,68 @@
       })
     ]);
 
+    // ==========================================
+    // Live Store Engine & Real-Time Sync
+    // ==========================================
+    const STORAGE_KEY = 'shanu_atelier_store_v1';
+    let liveStoreData = {
+      stockOverrides: {},
+      customProducts: [],
+      settings: {
+        whatsappNumber: '94784261803',
+        bannerNotice: '',
+        bannerEnabled: false
+      }
+    };
+
+    function loadLiveStoreData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          liveStoreData = { ...liveStoreData, ...parsed };
+        }
+      } catch (e) {
+        console.warn("Error parsing live store data", e);
+      }
+    }
+
+    function getTierPrice(tier) {
+      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['rose_' + tier.count]) {
+        const p = liveStoreData.stockOverrides['rose_' + tier.count].price;
+        if (p && typeof p === 'number' && p > 0) return p;
+      }
+      return tier.price;
+    }
+
+    function isTierInStock(tier) {
+      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['rose_' + tier.count]) {
+        return liveStoreData.stockOverrides['rose_' + tier.count].inStock !== false;
+      }
+      return true;
+    }
+
+    function getDecorPrice(item) {
+      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['decor_' + item.id]) {
+        const p = liveStoreData.stockOverrides['decor_' + item.id].price;
+        if (p && typeof p === 'number' && p > 0) return p;
+      }
+      return item.price;
+    }
+
+    function isDecorInStock(item) {
+      if (liveStoreData.stockOverrides && liveStoreData.stockOverrides['decor_' + item.id]) {
+        return liveStoreData.stockOverrides['decor_' + item.id].inStock !== false;
+      }
+      return true;
+    }
+
+    function getActiveWhatsAppNumber() {
+      return (liveStoreData.settings && liveStoreData.settings.whatsappNumber) 
+        ? liveStoreData.settings.whatsappNumber 
+        : '94784261803';
+    }
+
     // App State
     let cart = [];
     let currentLang = 'en';
@@ -1190,7 +1296,7 @@
       renderRoseTierChips();
     }
 
-    // Render Rose Tier Chips
+    // Render Rose Tier Chips (Dynamic Live Stock & Price Overrides)
     function renderRoseTierChips() {
       const container = document.getElementById('rose-tier-chips');
       if (!container) return;
@@ -1200,13 +1306,17 @@
 
       container.innerHTML = filtered.map(t => {
         const isActive = t.originalIndex === selectedTierIndex;
+        const currentPrice = getTierPrice(t);
+        const inStock = isTierInStock(t);
+
         return `
-          <button onclick="selectRoseTier(${t.originalIndex})" class="p-2 rounded-2xl border transition text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${isActive ? 'bg-stone-900 text-white border-stone-900 shadow-sm' : 'bg-stone-50 dark:bg-white/5 border-stone-200 dark:border-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-100'}">
-            <div class="w-8 h-8 rounded-full overflow-hidden border ${isActive ? 'border-amber-300' : 'border-stone-300'}">
+          <button onclick="selectRoseTier(${t.originalIndex})" class="p-2 rounded-2xl border transition text-center flex flex-col items-center justify-center gap-1 cursor-pointer relative ${isActive ? 'bg-stone-900 text-white border-stone-900 shadow-sm' : 'bg-stone-50 dark:bg-white/5 border-stone-200 dark:border-white/10 text-stone-700 dark:text-stone-300 hover:bg-stone-100'}">
+            ${!inStock ? '<span class="absolute top-1 right-1 px-1.5 py-0.2 rounded bg-rose-600 text-white text-[8px] font-extrabold leading-none">Out</span>' : ''}
+            <div class="w-8 h-8 rounded-full overflow-hidden border ${isActive ? 'border-amber-300' : 'border-stone-300'} ${!inStock ? 'opacity-50 grayscale' : ''}">
               <img src="${t.img}" alt="${t.count} Roses" class="w-full h-full object-cover">
             </div>
             <span class="text-xs font-bold leading-none mt-0.5">${t.count} Roses</span>
-            <span class="text-[10px] font-extrabold ${isActive ? 'text-amber-300' : 'text-stone-900 dark:text-stone-100'}">Rs. ${t.price.toLocaleString()}</span>
+            <span class="text-[10px] font-extrabold ${isActive ? 'text-amber-300' : 'text-stone-900 dark:text-stone-100'}">Rs. ${currentPrice.toLocaleString()}</span>
           </button>
         `;
       }).join('');
@@ -1255,7 +1365,8 @@
       const tag = currentLang === 'si' ? tier.tag_si : tier.tag_en;
       const size = currentLang === 'si' ? tier.size_si : tier.size_en;
       const meaning = currentLang === 'si' ? tier.meaning_si : tier.meaning_en;
-      const basePrice = tier.price;
+      const basePrice = getTierPrice(tier);
+      const inStock = isTierInStock(tier);
       const lightsPrice = hasFairyLights ? 250 : 0;
       const totalPrice = basePrice + lightsPrice;
       const perRose = Math.round(basePrice / tier.count);
@@ -1269,13 +1380,44 @@
       document.getElementById('builder-meaning').innerText = meaning;
       document.getElementById('builder-per-rose').innerText = `Rs. ${perRose} / rose`;
       document.getElementById('builder-total-price').innerText = `Rs. ${totalPrice.toLocaleString()}`;
+
+      // Stock Alert and Button States
+      const alertBox = document.getElementById('builder-stock-alert');
+      const addBtn = document.getElementById('builder-add-btn');
+      const addBtnText = document.getElementById('builder-add-btn-text');
+      const orderBtnText = document.getElementById('builder-order-btn-text');
+
+      if (!inStock) {
+        if (alertBox) alertBox.classList.remove('hidden');
+        if (addBtn) {
+          addBtn.disabled = true;
+          addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          addBtn.classList.remove('cursor-pointer');
+        }
+        if (addBtnText) addBtnText.innerText = currentLang === 'si' ? "දැනට අවසන් (Sold Out)" : "Currently Out of Stock";
+        if (orderBtnText) orderBtnText.innerText = currentLang === 'si' ? "Pre-order විමසන්න (WhatsApp)" : "Pre-order Inquiry (WhatsApp)";
+      } else {
+        if (alertBox) alertBox.classList.add('hidden');
+        if (addBtn) {
+          addBtn.disabled = false;
+          addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          addBtn.classList.add('cursor-pointer');
+        }
+        if (addBtnText) addBtnText.innerText = currentLang === 'si' ? "Custom පොකුර Bag එකට දමන්න" : "Add Custom Bouquet to Bag";
+        if (orderBtnText) orderBtnText.innerText = currentLang === 'si' ? "WhatsApp මගින් ඇණවුම් කරන්න (COD)" : "Order on WhatsApp (COD)";
+      }
     }
 
     // Add Custom Bouquet to Cart (Tamper-Proof)
     function addCustomBouquetToCart() {
       const tier = rosePricingTiers[selectedTierIndex];
+      if (!isTierInStock(tier)) {
+        alert("This bouquet size is currently out of stock. Please use the WhatsApp Pre-order option.");
+        return;
+      }
+
       const lightsPrice = hasFairyLights ? 250 : 0;
-      const finalPrice = tier.price + lightsPrice;
+      const finalPrice = getTierPrice(tier) + lightsPrice;
       const customId = `custom_rose_${tier.count}_${selectedColorName.replace(/[^a-zA-Z0-9]/g, '')}_${hasFairyLights ? 'lights' : 'nolights'}`;
 
       const existing = cart.find(i => i.id === customId);
@@ -1302,11 +1444,16 @@
     // Order Custom Bouquet Directly on WhatsApp
     function orderCustomBouquetWhatsApp() {
       const tier = rosePricingTiers[selectedTierIndex];
+      const inStock = isTierInStock(tier);
       const lightsPrice = hasFairyLights ? 250 : 0;
-      const finalPrice = tier.price + lightsPrice;
+      const finalPrice = getTierPrice(tier) + lightsPrice;
       const title = currentLang === 'si' ? tier.title_si : tier.title_en;
+      const waNumber = getActiveWhatsAppNumber();
 
-      let text = "*SHANU HAUTE FLORAL ATELIER — BESPOKE INQUIRY*%0A%0A";
+      let text = inStock 
+        ? "*SHANU HAUTE FLORAL ATELIER — BESPOKE INQUIRY*%0A%0A"
+        : "*SHANU HAUTE FLORAL ATELIER — PRE-ORDER INQUIRY (CURRENTLY OUT OF STOCK)*%0A%0A";
+
       text += `*Item:* Exactly ${tier.count} Satin Roses (${title})%0A`;
       text += `*Scale:* ${tier.size_en}%0A`;
       text += `*Ribbon Palette:* ${selectedColorName}%0A`;
@@ -1315,9 +1462,11 @@
       text += `*Total Amount (COD):* Rs. ${finalPrice.toLocaleString()}%0A`;
       text += "*Delivery Address:* [Write address here]%0A";
       text += "*Phone Number:* [Write phone here]%0A%0A";
-      text += "Please confirm availability and dispatch via Cash on Delivery.";
+      text += inStock 
+        ? "Please confirm availability and dispatch via Cash on Delivery."
+        : "Please let me know when this size will be next available for pre-order delivery.";
 
-      window.open(`https://api.whatsapp.com/send?phone=94784261803&text=${text}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${text}`, '_blank');
     }
 
     // Filter Living Decor Items
@@ -1345,10 +1494,13 @@
         const title = currentLang === 'si' ? p.title_si : p.title_en;
         const desc = currentLang === 'si' ? p.desc_si : p.desc_en;
         const specs = currentLang === 'si' ? p.specs_si : p.specs_en;
+        const currentPrice = getDecorPrice(p);
+        const inStock = isDecorInStock(p);
 
         return `
-          <div class="group bg-white dark:bg-[#17141C] rounded-2xl overflow-hidden border border-[#E8DFD5] dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition">
-            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer" onclick="openLightbox(${p.id})">
+          <div class="group bg-white dark:bg-[#17141C] rounded-2xl overflow-hidden border border-[#E8DFD5] dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition relative">
+            ${!inStock ? '<div class="absolute top-2 left-2 z-10 bg-rose-600/90 text-white text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full shadow">Sold Out</div>' : ''}
+            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer ${!inStock ? 'opacity-60' : ''}" onclick="openLightbox(${p.id})">
               <img src="${p.img}" alt="${title}" class="w-full h-full object-cover img-zoom">
               <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Zoom</div>
             </div>
@@ -1359,13 +1511,13 @@
                 <div class="text-[10.5px] text-stone-400 dark:text-stone-500 mt-1 font-medium">${specs}</div>
               </div>
               <div class="pt-3 border-t border-stone-100 dark:border-white/10 flex items-center justify-between">
-                <span class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${p.price.toLocaleString()}</span>
+                <span class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${currentPrice.toLocaleString()}</span>
                 <div class="flex items-center gap-1.5">
-                  <button onclick="addToCart(${p.id})" class="px-3 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-semibold transition cursor-pointer">
-                    Add
+                  <button onclick="${inStock ? `addToCart(${p.id})` : ''}" ${!inStock ? 'disabled' : ''} class="px-3 py-1.5 rounded-full ${inStock ? 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer' : 'bg-stone-300 dark:bg-white/10 text-stone-500 cursor-not-allowed'} text-[11px] font-semibold transition">
+                    ${inStock ? 'Add' : 'Sold Out'}
                   </button>
                   <button onclick="quickOrder(${p.id})" class="px-2.5 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold transition cursor-pointer">
-                    Order
+                    ${inStock ? 'Order' : 'Pre-order'}
                   </button>
                 </div>
               </div>
@@ -1373,6 +1525,123 @@
           </div>
         `;
       }).join('');
+    }
+
+    // Render Custom Added Creations
+    function renderCustomCreations() {
+      const section = document.getElementById('custom-creations-section');
+      const grid = document.getElementById('custom-creations-grid');
+      if (!section || !grid) return;
+
+      const items = liveStoreData.customProducts || [];
+      if (items.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      grid.innerHTML = items.map(p => {
+        const inStock = p.inStock !== false;
+        return `
+          <div class="group bg-white dark:bg-[#17141C] rounded-2xl overflow-hidden border border-[#E8DFD5] dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition relative">
+            ${!inStock ? '<div class="absolute top-2 left-2 z-10 bg-rose-600/90 text-white text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-full shadow">Sold Out</div>' : ''}
+            <div class="relative aspect-[4/3] overflow-hidden bg-stone-100 cursor-pointer ${!inStock ? 'opacity-60' : ''}" onclick="openCustomLightbox('${p.id}')">
+              <img src="${p.img}" alt="${p.title}" class="w-full h-full object-cover img-zoom">
+              <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">Zoom</div>
+            </div>
+            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[9px] uppercase px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-600 dark:text-amber-300 font-bold">${p.category}</span>
+                </div>
+                <h4 class="font-bold text-stone-900 dark:text-white text-sm mt-1">${p.title}</h4>
+                <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-2">${p.desc}</p>
+                <div class="text-[10.5px] text-stone-400 dark:text-stone-500 mt-1 font-medium">${p.specs}</div>
+              </div>
+              <div class="pt-3 border-t border-stone-100 dark:border-white/10 flex items-center justify-between">
+                <span class="font-extrabold text-stone-900 dark:text-white text-sm">Rs. ${p.price.toLocaleString()}</span>
+                <div class="flex items-center gap-1.5">
+                  <button onclick="${inStock ? `addCustomItemToCart('${p.id}')` : ''}" ${!inStock ? 'disabled' : ''} class="px-3 py-1.5 rounded-full ${inStock ? 'bg-stone-900 hover:bg-stone-800 text-white cursor-pointer' : 'bg-stone-300 dark:bg-white/10 text-stone-500 cursor-not-allowed'} text-[11px] font-semibold transition">
+                    ${inStock ? 'Add' : 'Sold Out'}
+                  </button>
+                  <button onclick="orderCustomItemWhatsApp('${p.id}')" class="px-2.5 py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-semibold transition cursor-pointer">
+                    ${inStock ? 'Order' : 'Pre-order'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addCustomItemToCart(itemId) {
+      const item = (liveStoreData.customProducts || []).find(p => p.id === itemId);
+      if (!item) return;
+
+      const existing = cart.find(i => i.id === item.id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({
+          id: item.id,
+          isCustom: false,
+          isCustomAdded: true,
+          price: item.price,
+          title_en: item.title,
+          title_si: item.title,
+          img: item.img,
+          qty: 1
+        });
+      }
+      renderCart();
+      toggleCart(true);
+    }
+
+    function orderCustomItemWhatsApp(itemId) {
+      const item = (liveStoreData.customProducts || []).find(p => p.id === itemId);
+      if (!item) return;
+      const waNumber = getActiveWhatsAppNumber();
+
+      let text = `*SHANU ATELIER BESPOKE INQUIRY*%0A%0A*Item:* ${item.title}%0A*Category:* ${item.category}%0A*Price:* Rs. ${item.price.toLocaleString()} (Cash on Delivery)%0A%0A*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]`;
+      window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${text}`, '_blank');
+    }
+
+    function openCustomLightbox(itemId) {
+      const item = (liveStoreData.customProducts || []).find(p => p.id === itemId);
+      if (!item) return;
+
+      document.getElementById('lightbox-img').src = item.img;
+      document.getElementById('lightbox-title').innerText = item.title;
+      document.getElementById('lightbox-price').innerText = `Rs. ${item.price.toLocaleString()}`;
+      document.getElementById('lightbox-specs').innerText = item.specs || 'Bespoke Atelier Creation';
+      document.getElementById('lightbox-badge').innerText = item.category || 'Atelier Exclusive';
+
+      document.getElementById('lightbox-add-btn').onclick = () => { closeLightbox(); addCustomItemToCart(item.id); };
+      document.getElementById('lightbox-order-btn').onclick = () => { closeLightbox(); orderCustomItemWhatsApp(item.id); };
+
+      document.getElementById('image-lightbox').classList.remove('hidden');
+    }
+
+    // Apply Live Store Updates to UI
+    function applyLiveStoreUpdates() {
+      // Dynamic Announcement Banner
+      const banner = document.getElementById('dynamic-store-banner');
+      const bannerText = document.getElementById('dynamic-store-banner-text');
+      if (banner && bannerText) {
+        if (liveStoreData.settings && liveStoreData.settings.bannerEnabled && liveStoreData.settings.bannerNotice) {
+          bannerText.innerText = liveStoreData.settings.bannerNotice;
+          banner.classList.remove('hidden');
+        } else {
+          banner.classList.add('hidden');
+        }
+      }
+
+      renderRoseTierChips();
+      updateBuilderPreview();
+      renderDecorProducts();
+      renderCustomCreations();
+      renderCart();
     }
 
     // Standard Add To Cart
@@ -1402,9 +1671,13 @@
     function quickOrder(productId) {
       const product = decorItems.find(i => i.id === productId);
       if (!product) return;
+      const price = getDecorPrice(product);
+      const inStock = isDecorInStock(product);
+      const waNumber = getActiveWhatsAppNumber();
 
-      let text = `*SHANU ATELIER ORDER*%0A%0A*Item:* ${product.title_en}%0A*Price:* Rs. ${product.price.toLocaleString()} (Cash on Delivery)%0A%0A*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]`;
-      window.open(`https://api.whatsapp.com/send?phone=94784261803&text=${text}`, '_blank');
+      let text = inStock ? "*SHANU ATELIER ORDER*%0A%0A" : "*SHANU ATELIER PRE-ORDER INQUIRY*%0A%0A";
+      text += `*Item:* ${product.title_en}%0A*Price:* Rs. ${price.toLocaleString()} (Cash on Delivery)%0A%0A*Delivery Address:* [Please write address here]%0A*Phone Number:* [Please write phone here]`;
+      window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${text}`, '_blank');
     }
 
     // Render Shopping Bag
@@ -1425,21 +1698,21 @@
 
       let subtotal = 0;
       list.innerHTML = cart.map((item, idx) => {
-        // Price tamper protection
+        // Price tamper protection with dynamic live overrides
         let unitPrice = item.price;
         if (item.isCustom) {
           const tier = rosePricingTiers.find(t => t.count === item.roseCount);
           if (tier) {
-            unitPrice = tier.price + (item.hasLights ? 250 : 0);
+            unitPrice = getTierPrice(tier) + (item.hasLights ? 250 : 0);
           }
-        } else {
+        } else if (!item.isCustomAdded) {
           const original = decorItems.find(d => d.id === item.id);
-          if (original) unitPrice = original.price;
+          if (original) unitPrice = getDecorPrice(original);
         }
 
         const lineTotal = unitPrice * item.qty;
         subtotal += lineTotal;
-        const title = currentLang === 'si' ? item.title_si : item.title_en;
+        const title = currentLang === 'si' ? (item.title_si || item.title_en) : item.title_en;
 
         return `
           <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-stone-50 dark:bg-white/5 border border-stone-200 dark:border-white/10 text-xs">
@@ -1489,15 +1762,16 @@
 
       let subtotal = 0;
       let itemsListText = "";
+      const waNumber = getActiveWhatsAppNumber();
 
       cart.forEach((item, index) => {
         let unitPrice = item.price;
         if (item.isCustom) {
           const tier = rosePricingTiers.find(t => t.count === item.roseCount);
-          if (tier) unitPrice = tier.price + (item.hasLights ? 250 : 0);
-        } else {
+          if (tier) unitPrice = getTierPrice(tier) + (item.hasLights ? 250 : 0);
+        } else if (!item.isCustomAdded) {
           const original = decorItems.find(d => d.id === item.id);
-          if (original) unitPrice = original.price;
+          if (original) unitPrice = getDecorPrice(original);
         }
 
         const lineTotal = unitPrice * item.qty;
@@ -1518,7 +1792,7 @@
       text += "*Contact Phone:* [Please write phone number here]%0A%0A";
       text += "Please confirm order availability and delivery dispatch time.";
 
-      window.open(`https://api.whatsapp.com/send?phone=94784261803&text=${text}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${text}`, '_blank');
     }
 
     // Lightbox State
@@ -1640,11 +1914,15 @@
       renderRoseTierChips();
       updateBuilderPreview();
       renderDecorProducts();
+      renderCustomCreations();
       renderCart();
     }
 
-    // Initial Boot
+    // Initial Boot & Real-Time Sync Listeners
     document.addEventListener('DOMContentLoaded', () => {
+      // Load Dynamic Live Store Data
+      loadLiveStoreData();
+
       // Saved Theme
       const savedTheme = localStorage.getItem('shanu_theme');
       if (savedTheme === 'dark') {
@@ -1660,11 +1938,33 @@
         currentLang = 'si';
       }
 
-      renderRoseTierChips();
-      updateBuilderPreview();
-      renderDecorProducts();
-      renderCart();
+      applyLiveStoreUpdates();
       applyLanguage();
+
+      // Listen for Live Updates from Admin App
+      if ('BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('shanu_store_channel');
+        bc.onmessage = (event) => {
+          if (event.data && event.data.type === 'STORE_UPDATED') {
+            liveStoreData = event.data.data;
+            applyLiveStoreUpdates();
+          }
+        };
+      }
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY && e.newValue) {
+          try {
+            liveStoreData = JSON.parse(e.newValue);
+            applyLiveStoreUpdates();
+          } catch(err){}
+        }
+      });
+
+      // Register PWA Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
     });
   </script>
 

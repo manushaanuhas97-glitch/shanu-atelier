@@ -1,0 +1,31 @@
+{
+  "name": "Shanu Atelier LK — Store Admin",
+  "short_name": "Shanu Admin",
+  "description": "Mobile Admin Portal for Shanu Atelier LK. Manage real-time stock, prices, and new product catalog.",
+  "start_url": "./admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0D0B10",
+  "theme_color": "#D4AF37",
+  "icons": [
+    {
+      "src": "./shanu_atelier_official_logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./shanu_atelier_signature_emblem.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./shanu_atelier_monogram_crest.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
