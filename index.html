@@ -1192,7 +1192,7 @@
     // Live Store Engine & Multi-Device Cloud Sync
     // ==========================================
     const STORAGE_KEY = 'shanu_atelier_store_v1';
-    const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a067127101a096759c1102c5';
+    const CLOUD_STORE_URL = 'https://village-sos-default-rtdb.firebaseio.com/shanu_atelier_store.json';
 
     let liveStoreData = {
       stockOverrides: {},
@@ -1201,7 +1201,8 @@
         whatsappNumber: '94784261803',
         bannerNotice: '',
         bannerEnabled: false
-      }
+      },
+      lastUpdated: 0
     };
 
     function loadLiveStoreData() {
@@ -1209,11 +1210,51 @@
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          liveStoreData = { ...liveStoreData, ...parsed };
+          if (parsed && typeof parsed === 'object') {
+            mergeLiveStoreData(parsed);
+          }
         }
       } catch (e) {
         console.warn("Error parsing live store data", e);
       }
+    }
+
+    // Deep merge incoming state with Last-Write-Wins timestamp protection
+    function mergeLiveStoreData(incoming) {
+      if (!incoming || typeof incoming !== 'object') return false;
+
+      // Timestamp guard: Never overwrite newer local changes with older data
+      if (incoming.lastUpdated && liveStoreData.lastUpdated && incoming.lastUpdated < liveStoreData.lastUpdated) {
+        return false;
+      }
+
+      // Deep merge stockOverrides so existing stock settings are NEVER wiped out
+      const mergedOverrides = { ...liveStoreData.stockOverrides };
+      if (incoming.stockOverrides && typeof incoming.stockOverrides === 'object') {
+        Object.keys(incoming.stockOverrides).forEach(key => {
+          const item = incoming.stockOverrides[key];
+          if (item !== undefined && item !== null) {
+            mergedOverrides[key] = {
+              ...(mergedOverrides[key] || {}),
+              ...(typeof item === 'object' ? item : { inStock: item !== false })
+            };
+          }
+        });
+      }
+      liveStoreData.stockOverrides = mergedOverrides;
+
+      if (Array.isArray(incoming.customProducts)) {
+        liveStoreData.customProducts = incoming.customProducts;
+      }
+
+      if (incoming.settings && typeof incoming.settings === 'object') {
+        liveStoreData.settings = { ...liveStoreData.settings, ...incoming.settings };
+      }
+
+      liveStoreData.lastUpdated = Math.max(liveStoreData.lastUpdated || 0, incoming.lastUpdated || 0);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(liveStoreData));
+      applyLiveStoreUpdates();
+      return true;
     }
 
     // Real-Time Cloud Sync (Loads live changes from Admin app on any device)
@@ -1221,18 +1262,33 @@
       try {
         const res = await fetch(CLOUD_STORE_URL + '?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
-          const json = await res.json();
-          if (json && json.data && json.data.state) {
-            const cloudState = JSON.parse(json.data.state);
-            if (cloudState && typeof cloudState === 'object') {
-              liveStoreData = { ...liveStoreData, ...cloudState };
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(liveStoreData));
-              applyLiveStoreUpdates();
-            }
+          const cloudData = await res.json();
+          if (cloudData && typeof cloudData === 'object') {
+            mergeLiveStoreData(cloudData);
           }
         }
       } catch (e) {
         console.warn("Cloud sync offline fallback to local store", e);
+      }
+    }
+
+    // Real-Time Server-Sent Events Listener (Instant Push from Admin)
+    function listenToLiveCloudStream() {
+      if (typeof EventSource === 'undefined') return;
+      try {
+        const sse = new EventSource(CLOUD_STORE_URL);
+        const handleEvent = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg && msg.data && typeof msg.data === 'object') {
+              mergeLiveStoreData(msg.data);
+            }
+          } catch(err){}
+        };
+        sse.addEventListener('put', handleEvent);
+        sse.addEventListener('patch', handleEvent);
+      } catch(e) {
+        console.warn("SSE init error", e);
       }
     }
 
@@ -2173,22 +2229,24 @@
       // Multi-Device Cloud Sync on Boot
       fetchCloudStoreData();
 
-      // Background Revalidation every 12 seconds
-      setInterval(fetchCloudStoreData, 12000);
+      // Real-Time Server-Sent Events stream from Firebase
+      listenToLiveCloudStream();
 
-      // Instant refresh when user switches tabs or returns to browser
+      // Periodic safety revalidation every 60 seconds
+      setInterval(fetchCloudStoreData, 60000);
+
+      // Instant refresh when user returns to browser tab
       window.addEventListener('focus', fetchCloudStoreData);
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) fetchCloudStoreData();
       });
 
-      // Listen for Live Updates from Admin App
+      // Listen for Live Updates from Admin App in same browser
       if ('BroadcastChannel' in window) {
         const bc = new BroadcastChannel('shanu_store_channel');
         bc.onmessage = (event) => {
           if (event.data && event.data.type === 'STORE_UPDATED') {
-            liveStoreData = event.data.data;
-            applyLiveStoreUpdates();
+            mergeLiveStoreData(event.data.data);
           }
         };
       }
@@ -2196,8 +2254,10 @@
       window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEY && e.newValue) {
           try {
-            liveStoreData = JSON.parse(e.newValue);
-            applyLiveStoreUpdates();
+            const incoming = JSON.parse(e.newValue);
+            if (incoming && (!incoming.lastUpdated || incoming.lastUpdated >= (liveStoreData.lastUpdated || 0))) {
+              mergeLiveStoreData(incoming);
+            }
           } catch(err){}
         }
       });

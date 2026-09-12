@@ -490,7 +490,7 @@
     const STORAGE_KEY = 'shanu_atelier_store_v1';
     const PIN_KEY = 'shanu_admin_pin';
     const AUTH_KEY = 'shanu_admin_auth';
-    const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff808181a067127101a096759c1102c5';
+    const CLOUD_STORE_URL = 'https://village-sos-default-rtdb.firebaseio.com/shanu_atelier_store.json';
 
     let currentPinInput = "";
     let selectedStockCategory = 'all';
@@ -508,19 +508,59 @@
       lastUpdated: Date.now()
     };
 
+    // Deep merge incoming state with Last-Write-Wins timestamp protection
+    function mergeStoreData(incoming) {
+      if (!incoming || typeof incoming !== 'object') return false;
+
+      // Timestamp guard: Never overwrite newer local changes with older data
+      if (incoming.lastUpdated && storeData.lastUpdated && incoming.lastUpdated < storeData.lastUpdated) {
+        console.log("Ignored stale incoming update:", incoming.lastUpdated, "< local:", storeData.lastUpdated);
+        return false;
+      }
+
+      // Deep merge stockOverrides so existing stock settings are NEVER wiped out
+      const mergedOverrides = { ...storeData.stockOverrides };
+      if (incoming.stockOverrides && typeof incoming.stockOverrides === 'object') {
+        Object.keys(incoming.stockOverrides).forEach(key => {
+          const item = incoming.stockOverrides[key];
+          if (item !== undefined && item !== null) {
+            mergedOverrides[key] = {
+              ...(mergedOverrides[key] || {}),
+              ...(typeof item === 'object' ? item : { inStock: item !== false })
+            };
+          }
+        });
+      }
+      storeData.stockOverrides = mergedOverrides;
+
+      if (Array.isArray(incoming.customProducts)) {
+        storeData.customProducts = incoming.customProducts;
+      }
+
+      if (incoming.settings && typeof incoming.settings === 'object') {
+        storeData.settings = { ...storeData.settings, ...incoming.settings };
+      }
+
+      storeData.lastUpdated = Math.max(storeData.lastUpdated || 0, incoming.lastUpdated || 0);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storeData));
+      return true;
+    }
+
     // Initialize Store
     function initStore() {
       const savedData = localStorage.getItem(STORAGE_KEY);
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
-          storeData = { ...storeData, ...parsed };
+          if (parsed && typeof parsed === 'object') {
+            mergeStoreData(parsed);
+          }
         } catch (e) {
           console.error("Storage parse error", e);
         }
       }
 
-      // Initialize base overrides if not present, preserving existing booleans or objects
+      // Initialize base overrides only if key doesn't exist yet
       baseProducts.forEach(p => {
         if (storeData.stockOverrides[p.id] === undefined || storeData.stockOverrides[p.id] === null) {
           storeData.stockOverrides[p.id] = { inStock: true, price: p.price };
@@ -550,14 +590,18 @@
       // Fetch Latest Cloud Store Data on startup to sync across any other phone/device
       fetchCloudDataOnStart();
 
-      // Listen for updates from other tabs / windows
+      // Listen for updates from other tabs / windows with timestamp protection
       window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEY && e.newValue) {
           try {
-            storeData = JSON.parse(e.newValue);
-            renderStockList();
-            renderCustomItems();
-            showToast("Updated from other device!");
+            const incoming = JSON.parse(e.newValue);
+            if (incoming && (!incoming.lastUpdated || incoming.lastUpdated >= (storeData.lastUpdated || 0))) {
+              if (mergeStoreData(incoming)) {
+                renderStockList();
+                renderCustomItems();
+                showToast("Updated from other device!");
+              }
+            }
           } catch(err){}
         }
       });
@@ -571,23 +615,55 @@
         if (text) text.innerText = "Checking Cloud...";
         const res = await fetch(CLOUD_STORE_URL + '?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
-          const json = await res.json();
-          if (json && json.data && json.data.state) {
-            const cloudState = JSON.parse(json.data.state);
-            if (cloudState && typeof cloudState === 'object') {
-              storeData = { ...storeData, ...cloudState };
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(storeData));
-              renderStockList();
-              renderCustomItems();
-              if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-              if (text) text.innerText = "Live Cloud Synced ✓";
+          const cloudState = await res.json();
+          if (cloudState && typeof cloudState === 'object') {
+            if (cloudState.lastUpdated && storeData.lastUpdated && cloudState.lastUpdated < storeData.lastUpdated) {
+              // Local has newer changes that haven't reached cloud yet, push local to cloud!
+              syncToCloud(false);
+            } else {
+              if (mergeStoreData(cloudState)) {
+                renderStockList();
+                renderCustomItems();
+              }
             }
+            if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+            if (text) text.innerText = "Live Cloud Synced ✓";
           }
         }
       } catch(e) {
         console.warn("Could not fetch cloud data on start", e);
         if (dot) dot.className = "w-2 h-2 rounded-full bg-stone-500";
         if (text) text.innerText = "Local Mode";
+      }
+
+      // Start live SSE listener
+      listenToLiveCloudStream();
+    }
+
+    // Real-Time Server-Sent Events Listener (Firebase RTDB Native Push)
+    function listenToLiveCloudStream() {
+      if (typeof EventSource === 'undefined') return;
+      try {
+        const sse = new EventSource(CLOUD_STORE_URL);
+        const handleEvent = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg && msg.data && typeof msg.data === 'object') {
+              if (mergeStoreData(msg.data)) {
+                renderStockList();
+                renderCustomItems();
+                const dot = document.getElementById('cloud-status-dot');
+                const text = document.getElementById('cloud-status-text');
+                if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                if (text) text.innerText = "Live Cloud Synced ✓";
+              }
+            }
+          } catch(err){}
+        };
+        sse.addEventListener('put', handleEvent);
+        sse.addEventListener('patch', handleEvent);
+      } catch(e) {
+        console.warn("SSE init error", e);
       }
     }
 
@@ -1039,12 +1115,22 @@
           bc.close();
         }
 
-        // 2. Real-Time Multi-Device Cloud Sync
+        // 2. Real-Time Multi-Device Cloud Sync to Firebase RTDB
         const payload = JSON.stringify({
-          name: 'shanu_atelier_store',
-          data: {
-            state: JSON.stringify(storeData)
-          }
+          stockOverrides: storeData.stockOverrides || {},
+          customProducts: (storeData.customProducts || []).map(p => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            price: p.price,
+            specs: p.specs || '',
+            desc: p.desc || '',
+            inStock: p.inStock !== false,
+            img: p.img || '',
+            createdAt: p.createdAt || Date.now()
+          })),
+          settings: storeData.settings || {},
+          lastUpdated: storeData.lastUpdated || Date.now()
         });
 
         const res = await fetch(CLOUD_STORE_URL, {
